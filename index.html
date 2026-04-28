@@ -818,6 +818,22 @@
         <input class="form-input" id="nc-debut" type="date">
       </div>
     </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Type de surveillance</label>
+        <select class="form-select" id="nc-surveillance">
+          <option value="complete">Surveillance complète</option>
+          <option value="conjointe">Surveillance conjointe</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Type de délai</label>
+        <select class="form-select" id="nc-delai-type">
+          <option value="ouvrables">Jours ouvrables</option>
+          <option value="calendriers">Jours calendriers</option>
+        </select>
+      </div>
+    </div>
     <div class="form-group">
       <label class="form-label">Heure de travail habituelle</label>
       <div class="form-row">
@@ -898,7 +914,7 @@
             <label class="field-label">À :</label>
             <input class="field-input" id="jt-heure-fin" type="time">
           </div>
-          <div class="form-group">
+          <div class="form-group" id="conges-header-row">
             <label class="field-label">Congés légaux (j)</label>
             <input class="field-input" id="jt-conges" type="number" value="0" min="0">
           </div>
@@ -947,7 +963,7 @@
             <div class="delai-item-label">Initial</div>
             <div class="delai-item-val"><input id="jt-delai-initial" type="number" title="Jours initial"></div>
           </div>
-          <div class="delai-item">
+          <div class="delai-item" id="delai-ecoules-item">
             <div class="delai-item-label">Écoulés</div>
             <div class="delai-item-val"><input id="jt-delai-ecoules" type="number" title="Jours écoulés"></div>
           </div>
@@ -966,6 +982,18 @@
           <div class="delai-item">
             <div class="delai-item-label">Restants</div>
             <div class="delai-item-val" id="jt-delai-restants-display" style="color:var(--success)">—</div>
+          </div>
+        </div>
+        <!-- Congés légaux : jours ouvrables uniquement -->
+        <div id="delai-conges-row" style="margin-top:10px;display:none;">
+          <label class="field-label">Nombre de congés légaux</label>
+          <input class="field-input" id="jt-conges-delai" type="number" value="0" min="0" style="width:100px;margin-top:4px;">
+        </div>
+        <!-- Fin de délai : jours calendriers uniquement -->
+        <div id="delai-fin-row" style="margin-top:10px;display:none;">
+          <div class="delai-item" style="display:inline-block;">
+            <div class="delai-item-label">Fin du délai contractuel</div>
+            <div class="delai-item-val" id="jt-delai-fin-display" style="font-size:12px;">—</div>
           </div>
         </div>
       </div>
@@ -999,7 +1027,15 @@
         <span class="jt-section-title">Travaux exécutés</span>
       </div>
       <div class="jt-section-body">
-        <textarea class="field-textarea" id="jt-travaux" placeholder="Description des travaux exécutés ce jour..." style="min-height:100px;"></textarea>
+        <div id="jt-travaux-complet">
+          <textarea class="field-textarea" id="jt-travaux" placeholder="Description des travaux exécutés ce jour..." style="min-height:100px;"></textarea>
+        </div>
+        <div id="jt-travaux-conjoint" style="display:none;">
+          <label class="field-label" style="margin-bottom:6px;display:block;">Travaux SPGE</label>
+          <textarea class="field-textarea" id="jt-travaux-spge" placeholder="Travaux SPGE exécutés ce jour..." style="min-height:80px;margin-bottom:10px;"></textarea>
+          <label class="field-label" style="margin-bottom:6px;display:block;">Travaux Voirie</label>
+          <textarea class="field-textarea" id="jt-travaux-voirie" placeholder="Travaux Voirie exécutés ce jour..." style="min-height:80px;"></textarea>
+        </div>
       </div>
     </div>
 
@@ -1240,17 +1276,19 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
 // CHANTIERS
 // ══════════════════════════════════════
 function creerChantier() {
-  const nom       = document.getElementById('nc-nom').value.trim();
-  const entreprise= document.getElementById('nc-entreprise').value.trim();
-  const delai     = parseInt(document.getElementById('nc-delai').value) || 200;
-  const debut     = document.getElementById('nc-debut').value || todayStr();
-  const hDebut    = document.getElementById('nc-heure-debut').value || '07:00';
-  const hFin      = document.getElementById('nc-heure-fin').value || '17:30';
+  const nom        = document.getElementById('nc-nom').value.trim();
+  const entreprise = document.getElementById('nc-entreprise').value.trim();
+  const delai      = parseInt(document.getElementById('nc-delai').value) || 200;
+  const debut      = document.getElementById('nc-debut').value || todayStr();
+  const hDebut     = document.getElementById('nc-heure-debut').value || '07:00';
+  const hFin       = document.getElementById('nc-heure-fin').value || '17:30';
+  const surveillance = document.getElementById('nc-surveillance').value;
+  const delaiType    = document.getElementById('nc-delai-type').value;
 
   if (!nom) { showToast('Intitulé obligatoire', false); return; }
 
   const id = uid();
-  state.chantiers[id] = { nom, entreprise, delaiInitial: delai, debutTravaux: debut, heureDebut: hDebut, heureFin: hFin, createdAt: todayStr() };
+  state.chantiers[id] = { nom, entreprise, delaiInitial: delai, debutTravaux: debut, heureDebut: hDebut, heureFin: hFin, surveillance, delaiType, createdAt: todayStr() };
   state.journaux[id] = {};
   saveState();
   closeModal('modal-new-chantier');
@@ -1274,7 +1312,7 @@ function renderChantiers() {
       <div class="chantier-dot"></div>
       <div class="chantier-info">
         <div class="chantier-name">${c.nom}</div>
-        <div class="chantier-meta">${jCount} journal(ux) · Début ${formatDateFR(c.debutTravaux)}</div>
+        <div class="chantier-meta">${jCount} journal(ux) · ${c.surveillance === 'conjointe' ? 'Conjointe' : 'Complète'} · ${c.delaiType === 'calendriers' ? 'J.Cal.' : 'J.Ouv.'} · Début ${formatDateFR(c.debutTravaux)}</div>
       </div>
       <div class="chantier-arrow">›</div>
       <button class="btn-delete-chantier" onclick="supprimerChantier(event, '${id}')" title="Supprimer ce chantier">🗑</button>
@@ -1478,6 +1516,8 @@ function ouvrirJournal(chantierId, dateKey) {
 
   // Textareas
   setVal('jt-travaux',            j.travaux           || '');
+  setVal('jt-travaux-spge',       j.travauxSpge       || '');
+  setVal('jt-travaux-voirie',     j.travauxVoirie     || '');
   setVal('jt-materiaux',          j.materiaux         || '');
   setVal('jt-materiel-hs-causes', j.materielHsCauses  || '');
   setVal('jt-essais',             j.essais            || '');
@@ -1499,21 +1539,97 @@ function ouvrirJournal(chantierId, dateKey) {
     }
   });
 
+  // Adapter l'interface selon le type de chantier
+  adapterInterface(c);
+
   showScreen('screen-journal');
 }
 
+function adapterInterface(c) {
+  const surveillance = c.surveillance || 'complete';
+  const delaiType    = c.delaiType    || 'ouvrables';
+
+  // Section B : travaux
+  const divComplet  = document.getElementById('jt-travaux-complet');
+  const divConjoint = document.getElementById('jt-travaux-conjoint');
+  if (surveillance === 'conjointe') {
+    if (divComplet)  divComplet.style.display  = 'none';
+    if (divConjoint) divConjoint.style.display = 'block';
+  } else {
+    if (divComplet)  divComplet.style.display  = 'block';
+    if (divConjoint) divConjoint.style.display = 'none';
+  }
+
+  // Congés légaux dans en-tête : jours ouvrables seulement
+  const congesRow = document.getElementById('conges-header-row');
+  if (congesRow) congesRow.style.display = delaiType === 'ouvrables' ? '' : 'none';
+
+  // Jours écoulés : automatique pour calendriers, manuel pour ouvrables
+  const ecoulesItem = document.getElementById('delai-ecoules-item');
+  if (ecoulesItem) {
+    const input = document.getElementById('jt-delai-ecoules');
+    if (delaiType === 'calendriers') {
+      // Calculer automatiquement depuis la date du journal et le début des travaux
+      const dateJournal = document.getElementById('jt-date').value;
+      const debutTravaux = c.debutTravaux;
+      if (dateJournal && debutTravaux) {
+        const diff = Math.round((new Date(dateJournal) - new Date(debutTravaux)) / 86400000);
+        if (input) input.value = Math.max(0, diff);
+      }
+      if (input) input.readOnly = true;
+      if (input) input.style.color = 'var(--text2)';
+    } else {
+      if (input) input.readOnly = false;
+      if (input) input.style.color = 'var(--accent)';
+    }
+  }
+
+  // Fin de délai : jours calendriers seulement
+  const finRow = document.getElementById('delai-fin-row');
+  if (finRow) finRow.style.display = delaiType === 'calendriers' ? 'block' : 'none';
+  if (delaiType === 'calendriers') updateFinDelai(c);
+}
+
+function updateFinDelai(c) {
+  const dateJournal = document.getElementById('jt-date') ? document.getElementById('jt-date').value : '';
+  const restants    = parseInt(document.getElementById('jt-delai-restants-display') ? document.getElementById('jt-delai-restants-display').textContent : '0') || 0;
+  const el = document.getElementById('jt-delai-fin-display');
+  if (el && dateJournal) {
+    const fin = new Date(dateJournal);
+    fin.setDate(fin.getDate() + restants);
+    el.textContent = formatDateFR(fin.toISOString().slice(0,10));
+  }
+}
+
 function updateDelaiRestants() {
-  const init    = parseInt(document.getElementById('jt-delai-initial').value)  || 0;
-  const ecoules = parseInt(document.getElementById('jt-delai-ecoules').value)  || 0;
-  const intemp  = parseInt(document.getElementById('jt-delai-intemp').value)   || 0;
-  const decomp  = parseInt(document.getElementById('jt-delai-decomp').value)   || 0;
-  const statage = parseInt(document.getElementById('jt-delai-statage').value)  || 0;
-  const conges  = parseInt(document.getElementById('jt-conges').value)         || 0;
-  // Formule Excel : =(F6-G6+I6+J6)+H6+H4
-  const restants = (init - ecoules + decomp + statage) + intemp + conges;
+  const init    = parseInt(document.getElementById('jt-delai-initial') ? document.getElementById('jt-delai-initial').value : 0)  || 0;
+  const ecoules = parseInt(document.getElementById('jt-delai-ecoules') ? document.getElementById('jt-delai-ecoules').value : 0)  || 0;
+  const intemp  = parseInt(document.getElementById('jt-delai-intemp')  ? document.getElementById('jt-delai-intemp').value  : 0)  || 0;
+  const decomp  = parseInt(document.getElementById('jt-delai-decomp')  ? document.getElementById('jt-delai-decomp').value  : 0)  || 0;
+  const statage = parseInt(document.getElementById('jt-delai-statage') ? document.getElementById('jt-delai-statage').value : 0)  || 0;
+  const conges  = parseInt(document.getElementById('jt-conges')        ? document.getElementById('jt-conges').value        : 0)  || 0;
+
+  // Détermine le type de délai du chantier courant
+  const c = state.chantiers[state.currentChantierId] || {};
+  const delaiType = c.delaiType || 'ouvrables';
+
+  let restants;
+  if (delaiType === 'ouvrables') {
+    // Formule jours ouvrables : =(F6-G6+I6+J6)+H6+H4
+    restants = (init - ecoules + decomp + statage) + intemp + conges;
+  } else {
+    // Formule jours calendriers : =F6-G6+I6+J6
+    restants = init - ecoules + decomp + statage;
+  }
+
   const el = document.getElementById('jt-delai-restants-display');
-  el.textContent = restants;
-  el.style.color = restants < 0 ? 'var(--danger)' : restants < 10 ? 'var(--accent)' : 'var(--success)';
+  if (el) {
+    el.textContent = restants;
+    el.style.color = restants < 0 ? 'var(--danger)' : restants < 10 ? 'var(--accent)' : 'var(--success)';
+  }
+
+  // Mettre à jour la fin de délai si jours calendriers
+  if (delaiType === 'calendriers') updateFinDelai(c);
 }
 
 // ── Météo ──
@@ -1527,6 +1643,8 @@ function selectMeteo(chip) {
 const LISTE_OUVRIERS = [
   'Machiniste(s)',
   'Chauffeur(s)',
+  'Chef(s) d\'équipe',
+  'Contremaître(s)',
   'Ouvrier(s)',
   '— Autre (saisir manuellement) —'
 ];
@@ -1802,6 +1920,8 @@ function sauvegarderJournal() {
     delaiStatage: parseInt(document.getElementById('jt-delai-statage').value) || 0,
     ouvriers:     getTableData('ouvriers',         ['profession','nbre']),
     travaux:      document.getElementById('jt-travaux') ? document.getElementById('jt-travaux').value : '',
+    travauxSpge:  document.getElementById('jt-travaux-spge')   ? document.getElementById('jt-travaux-spge').value   : '',
+    travauxVoirie: document.getElementById('jt-travaux-voirie') ? document.getElementById('jt-travaux-voirie').value : '',
     materielService: getTableData('materiel-service', ['description','nbre']),
     materielHs:   getTableData('materiel-hs',       ['description','nbre']),
     materielHsCauses: document.getElementById('jt-materiel-hs-causes') ? document.getElementById('jt-materiel-hs-causes').value : '',
