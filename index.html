@@ -1,82 +1,2239 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Journal Travaux">
+<meta name="theme-color" content="#1a2332">
+<link rel="manifest" href="manifest.json">
+<title>Journal de Travaux</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1923;
+    --surface: #1a2332;
+    --surface2: #1e2a3a;
+    --surface3: #243040;
+    --border: #2d3f55;
+    --border2: #3a5068;
+    --accent: #f59e0b;
+    --accent2: #fbbf24;
+    --accent-dim: rgba(245,158,11,0.12);
+    --text: #e8edf2;
+    --text2: #9ab0c4;
+    --text3: #5a7a94;
+    --danger: #ef4444;
+    --success: #22c55e;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+    --radius: 6px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  .screen { display: none; min-height: 100vh; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overscroll-behavior: none;
+  }
+
+  /* ── ÉCRAN D'ACCUEIL ── */
+  #screen-home {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .home-header {
+    background: var(--surface);
+    border-bottom: 2px solid var(--accent);
+    padding: 20px 16px 16px;
+  }
+
+  .home-header h1 {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .home-header p {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: var(--mono);
+  }
+
+  .home-actions {
+    padding: 16px;
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn-primary {
+    flex: 1;
+    background: var(--accent);
+    color: #0f1923;
+    border: none;
+    border-radius: var(--radius);
+    padding: 14px 12px;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+  }
+
+  .btn-primary:active { transform: scale(0.97); background: var(--accent2); }
+
+  .btn-secondary {
+    background: var(--surface2);
+    color: var(--text2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .btn-secondary:active { background: var(--surface3); }
+
+  .chantiers-list {
+    flex: 1;
+    padding: 0 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 8px 0 6px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 4px;
+  }
+
+  .chantier-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .chantier-card:active { border-color: var(--accent); background: var(--surface2); }
+
+  .chantier-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .chantier-info { flex: 1; min-width: 0; }
+
+  .chantier-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .chantier-meta {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+    margin-top: 3px;
+  }
+
+  .chantier-arrow {
+    color: var(--text3);
+    font-size: 16px;
+  }
+
+  .btn-delete-chantier {
+    background: none;
+    border: none;
+    color: var(--text3);
+    font-size: 20px;
+    padding: 6px 8px;
+    cursor: pointer;
+    flex-shrink: 0;
+    line-height: 1;
+    border-radius: 4px;
+    transition: all 0.15s;
+  }
+
+  .btn-delete-chantier:active {
+    color: var(--danger);
+    background: rgba(239,68,68,0.1);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text3);
+    font-size: 13px;
+    font-family: var(--mono);
+  }
+
+  /* ── MODAL NOUVEAU CHANTIER ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 100;
+    display: flex;
+    align-items: flex-end;
+    backdrop-filter: blur(4px);
+  }
+
+  .modal-overlay.hidden { display: none; }
+
+  .modal-sheet {
+    background: var(--surface);
+    border-top: 2px solid var(--accent);
+    border-radius: 12px 12px 0 0;
+    padding: 20px 16px 32px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal-title {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .form-group { margin-bottom: 14px; }
+
+  .form-label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .form-input, .form-select {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 11px 12px;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s;
+    appearance: none;
+  }
+
+  .form-input:focus, .form-select:focus { border-color: var(--accent); }
+
+  .form-row { display: flex; gap: 10px; }
+  .form-row .form-group { flex: 1; }
+
+  .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+  .modal-actions .btn-primary { flex: 1; }
+
+  .btn-cancel {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 20px;
+    color: var(--text2);
+    font-family: var(--mono);
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  /* ── ÉCRAN CHANTIER ── */
+  #screen-chantier { display: none; min-height: 100vh; flex-direction: column; }
+
+  .top-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  .btn-back {
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px;
+    line-height: 1;
+  }
+
+  .top-bar-title {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .top-bar-title h2 {
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .top-bar-title p {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+  }
+
+  .journals-list {
+    flex: 1;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .journal-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.15s;
+  }
+
+  .journal-card:active { border-color: var(--accent); }
+
+  .journal-date {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    min-width: 90px;
+  }
+
+  .journal-info { flex: 1; }
+
+  .journal-status {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: var(--mono);
+  }
+
+  .status-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    margin-right: 5px;
+    background: var(--text3);
+  }
+
+  .status-dot.complete { background: var(--success); }
+  .status-dot.partial { background: var(--accent); }
+
+  .fab {
+    position: fixed;
+    bottom: 24px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 28px;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    font-size: 26px;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(245,158,11,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    z-index: 40;
+  }
+
+  .fab:active { transform: scale(0.93); }
+
+  /* ── ÉCRAN JOURNAL ── */
+  #screen-journal { display: none; min-height: 100vh; flex-direction: column; }
+
+  .journal-topbar {
+    background: var(--surface);
+    border-bottom: 2px solid var(--accent);
+    padding: 12px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .journal-topbar-info { flex: 1; min-width: 0; }
+
+  .journal-topbar-info h2 {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+  }
+
+  .journal-topbar-info p {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: var(--mono);
+  }
+
+  .btn-save {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    border-radius: var(--radius);
+    padding: 9px 16px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .btn-save:active { transform: scale(0.97); }
+
+  .journal-body {
+    flex: 1;
+    padding: 12px 16px 100px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* ── SECTIONS JOURNAL ── */
+  .jt-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .jt-section-header {
+    background: var(--surface2);
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .jt-section-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .jt-section-title {
+    font-size: 12px;
+    color: var(--text2);
+    font-weight: 500;
+  }
+
+  .jt-section-body { padding: 12px; }
+
+  /* En-tête chantier */
+  .header-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .header-grid .full-width { grid-column: 1 / -1; }
+
+  .field-group { display: flex; flex-direction: column; gap: 4px; }
+
+  .field-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text3);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .field-input, .field-select, .field-textarea {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 9px 10px;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 13px;
+    outline: none;
+    width: 100%;
+    transition: border-color 0.15s;
+    appearance: none;
+  }
+
+  .field-input:focus, .field-select:focus, .field-textarea:focus {
+    border-color: var(--accent);
+  }
+
+  .field-input[readonly] {
+    color: var(--text2);
+    border-color: transparent;
+    background: var(--surface3);
+  }
+
+  .field-textarea {
+    resize: vertical;
+    min-height: 70px;
+    font-family: var(--sans);
+    line-height: 1.5;
+  }
+
+  /* Délai row */
+  .delai-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .delai-item {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 10px;
+    text-align: center;
+  }
+
+  .delai-item-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 4px;
+  }
+
+  .delai-item-val {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  .delai-item-val input {
+    background: none;
+    border: none;
+    outline: none;
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Tableau dynamique */
+  .dynamic-table { display: flex; flex-direction: column; gap: 6px; }
+
+  .dynamic-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 6px 8px;
+  }
+
+  .dynamic-row .field-input {
+    border: none;
+    background: transparent;
+    padding: 4px 6px;
+    font-size: 13px;
+  }
+
+  .dynamic-row .field-input:focus { border-bottom: 1px solid var(--accent); }
+
+  .col-grow { flex: 1; }
+  .col-fixed { width: 70px; }
+  .col-narrow { width: 60px; }
+
+  .col-header {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0 8px 4px;
+    display: flex;
+    gap: 6px;
+  }
+
+  .btn-add-row {
+    background: var(--accent-dim);
+    border: 1px dashed var(--border2);
+    border-radius: 4px;
+    padding: 8px;
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 11px;
+    cursor: pointer;
+    text-align: center;
+    letter-spacing: 0.05em;
+    width: 100%;
+    transition: all 0.15s;
+  }
+
+  .btn-add-row:active { background: rgba(245,158,11,0.2); }
+
+  .btn-del-row {
+    background: none;
+    border: none;
+    color: var(--text3);
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px;
+    flex-shrink: 0;
+    line-height: 1;
+    transition: color 0.15s;
+  }
+
+  .btn-del-row:active { color: var(--danger); }
+
+  /* Totaux */
+  .total-bar {
+    background: var(--surface3);
+    border-radius: 4px;
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 6px;
+  }
+
+  .total-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .total-val {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  /* météo chips */
+  .meteo-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .meteo-chip {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--text2);
+    user-select: none;
+  }
+
+  .meteo-chip.selected {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  /* Heures row */
+  .heures-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .heures-sep {
+    color: var(--text3);
+    font-family: var(--mono);
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--success);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 200;
+    white-space: nowrap;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Sync indicator */
+  .sync-bar {
+    background: var(--surface2);
+    border-top: 1px solid var(--border);
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+  }
+
+  .sync-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--text3);
+    flex-shrink: 0;
+  }
+
+  .sync-dot.online { background: var(--success); }
+
+  /* Responsive tablette */
+  @media (min-width: 600px) {
+    .header-grid { grid-template-columns: 1fr 1fr 1fr; }
+    .delai-row { grid-template-columns: repeat(6, 1fr); }
+    .modal-sheet { max-width: 500px; margin: 0 auto; border-radius: 12px; }
+    .modal-overlay { align-items: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     ÉCRAN 1 : ACCUEIL / LISTE CHANTIERS
+══════════════════════════════════════ -->
+<div id="screen-home">
+  <div class="home-header">
+    <h1>Journal de Travaux</h1>
+    <p id="home-date-display"></p>
+  </div>
+  <div class="home-actions">
+    <button class="btn-primary" onclick="openModal('modal-new-chantier')">+ Nouveau chantier</button>
+    <button class="btn-secondary" onclick="showSyncInfo()">⟳ Sync</button>
+  </div>
+  <div class="chantiers-list">
+    <div class="section-label">Chantiers actifs</div>
+    <div id="chantiers-container"></div>
+  </div>
+  <div class="sync-bar">
+    <div class="sync-dot" id="sync-dot"></div>
+    <span id="sync-label">En attente de synchronisation</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL : NOUVEAU CHANTIER
+══════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="modal-new-chantier">
+  <div class="modal-sheet">
+    <div class="modal-title">Nouveau chantier</div>
+    <div class="form-group">
+      <label class="form-label">Intitulé du chantier *</label>
+      <input class="form-input" id="nc-nom" placeholder="Ex: 64980 Trottoir rue de la Paix">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Entreprise / Adjudicataire *</label>
+      <input class="form-input" id="nc-entreprise" placeholder="Nom, TVA, tél.">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Délai initial (jours)</label>
+        <input class="form-input" id="nc-delai" type="number" placeholder="200">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Début des travaux</label>
+        <input class="form-input" id="nc-debut" type="date">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Type de surveillance</label>
+        <select class="form-select" id="nc-surveillance">
+          <option value="complete">Surveillance complète</option>
+          <option value="conjointe">Surveillance conjointe</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Type de délai</label>
+        <select class="form-select" id="nc-delai-type">
+          <option value="ouvrables">Jours ouvrables</option>
+          <option value="calendriers">Jours calendriers</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Heure de travail habituelle</label>
+      <div class="form-row">
+        <input class="form-input" id="nc-heure-debut" type="time" value="07:00">
+        <input class="form-input" id="nc-heure-fin" type="time" value="17:30">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Adresse e-mail destinataire (export)</label>
+      <input class="form-input" id="nc-email" type="email" placeholder="bureau@exemple.be">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-new-chantier')">Annuler</button>
+      <button class="btn-primary" onclick="creerChantier()">Créer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     ÉCRAN 2 : LISTE JOURNAUX D'UN CHANTIER
+══════════════════════════════════════ -->
+<div id="screen-chantier" class="screen" style="flex-direction:column;">
+  <div class="top-bar">
+    <button class="btn-back" onclick="goHome()">←</button>
+    <div class="top-bar-title">
+      <h2 id="chantier-title-display"></h2>
+      <p id="chantier-meta-display"></p>
+    </div>
+    <button class="btn-secondary" onclick="exporterEtPartager()" title="Exporter et envoyer par mail" style="font-size:18px;padding:8px 12px;">📤</button>
+  </div>
+  <div class="journals-list" id="journals-container"></div>
+  <button class="fab" onclick="nouveauJournal()" title="Nouveau journal">+</button>
+</div>
+
+<!-- ══════════════════════════════════════
+     ÉCRAN 3 : SAISIE JOURNAL
+══════════════════════════════════════ -->
+<div id="screen-journal" class="screen" style="flex-direction:column;">
+  <div class="journal-topbar">
+    <button class="btn-back" onclick="goChantier()">←</button>
+    <div class="journal-topbar-info">
+      <h2 id="jt-topbar-date"></h2>
+      <p id="jt-topbar-meta"></p>
+    </div>
+    <button class="btn-save" onclick="sauvegarderJournal()">Sauver</button>
+  </div>
+
+  <div class="journal-body">
+
+    <!-- EN-TÊTE -->
+    <div class="jt-section">
+      <div class="jt-section-header">
+        <span class="jt-section-label">En-tête</span>
+        <span class="jt-section-title">Informations générales</span>
+      </div>
+      <div class="jt-section-body">
+        <div class="header-grid">
+          <div class="form-group full-width">
+            <label class="field-label">Intitulé du chantier</label>
+            <input class="field-input" id="jt-chantier-nom" readonly>
+          </div>
+          <div class="form-group full-width">
+            <label class="field-label">Entreprise</label>
+            <input class="field-input" id="jt-entreprise" readonly>
+          </div>
+          <div class="form-group">
+            <label class="field-label">Journal n°</label>
+            <input class="field-input" id="jt-num-journal" type="number" readonly>
+          </div>
+          <div class="form-group">
+            <label class="field-label">Feuille n°</label>
+            <input class="field-input" id="jt-num-feuille" type="number">
+          </div>
+          <div class="form-group">
+            <label class="field-label">Date</label>
+            <input class="field-input" id="jt-date" type="date">
+          </div>
+          <div class="form-group">
+            <label class="field-label">Heure de :</label>
+            <input class="field-input" id="jt-heure-debut" type="time">
+          </div>
+          <div class="form-group">
+            <label class="field-label">À :</label>
+            <input class="field-input" id="jt-heure-fin" type="time">
+          </div>
+          <div class="form-group" id="conges-header-row">
+            <label class="field-label">Congés légaux (j)</label>
+            <input class="field-input" id="jt-conges" type="number" value="0" min="0">
+          </div>
+        </div>
+
+        <!-- Météo -->
+        <div style="margin-top:12px;">
+          <label class="field-label" style="margin-bottom:8px;display:block;">État atmosphérique</label>
+          <div class="meteo-chips" id="meteo-chips">
+            <div class="meteo-chip" data-val="Ensoleillé" onclick="selectMeteo(this)">☀️ Ensoleillé</div>
+            <div class="meteo-chip" data-val="Nuageux" onclick="selectMeteo(this)">⛅ Nuageux</div>
+            <div class="meteo-chip" data-val="Couvert" onclick="selectMeteo(this)">☁️ Couvert</div>
+            <div class="meteo-chip" data-val="Pluvieux" onclick="selectMeteo(this)">🌧️ Pluvieux</div>
+            <div class="meteo-chip" data-val="Orageux" onclick="selectMeteo(this)">⛈️ Orageux</div>
+            <div class="meteo-chip" data-val="Venteux" onclick="selectMeteo(this)">💨 Venteux</div>
+            <div class="meteo-chip" data-val="Neigeux" onclick="selectMeteo(this)">❄️ Neigeux</div>
+            <div class="meteo-chip" data-val="Brouillard" onclick="selectMeteo(this)">🌫️ Brouillard</div>
+            <div class="meteo-chip" data-val="Gel" onclick="selectMeteo(this)">🥶 Gel</div>
+          </div>
+          <input type="hidden" id="jt-meteo" value="">
+        </div>
+
+        <!-- Températures -->
+        <div class="header-grid" style="margin-top:12px;">
+          <div class="form-group">
+            <label class="field-label">Température 08h00 (°C)</label>
+            <input class="field-input" id="jt-temp-matin" type="number" placeholder="°C">
+          </div>
+          <div class="form-group">
+            <label class="field-label">Température 16h00 (°C)</label>
+            <input class="field-input" id="jt-temp-soir" type="number" placeholder="°C">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DÉLAI -->
+    <div class="jt-section">
+      <div class="jt-section-header">
+        <span class="jt-section-label">Délai</span>
+        <span class="jt-section-title">Suivi contractuel</span>
+      </div>
+      <div class="jt-section-body">
+        <div class="delai-row">
+          <div class="delai-item">
+            <div class="delai-item-label">Initial</div>
+            <div class="delai-item-val"><input id="jt-delai-initial" type="number" title="Jours initial"></div>
+          </div>
+          <div class="delai-item" id="delai-ecoules-item">
+            <div class="delai-item-label">Écoulés</div>
+            <div class="delai-item-val"><input id="jt-delai-ecoules" type="number" title="Jours écoulés"></div>
+          </div>
+          <div class="delai-item">
+            <div class="delai-item-label">Intempéries</div>
+            <div class="delai-item-val"><input id="jt-delai-intemp" type="number" title="Jours intempéries"></div>
+          </div>
+          <div class="delai-item">
+            <div class="delai-item-label">Décomptes</div>
+            <div class="delai-item-val"><input id="jt-delai-decomp" type="number" title="Décomptes"></div>
+          </div>
+          <div class="delai-item">
+            <div class="delai-item-label">Statage</div>
+            <div class="delai-item-val"><input id="jt-delai-statage" type="number" title="Statage"></div>
+          </div>
+          <div class="delai-item">
+            <div class="delai-item-label">Restants</div>
+            <div class="delai-item-val" id="jt-delai-restants-display" style="color:var(--success)">—</div>
+          </div>
+        </div>
+        <!-- Congés légaux : jours ouvrables uniquement -->
+        <div id="delai-conges-row" style="margin-top:10px;display:none;">
+          <label class="field-label">Nombre de congés légaux</label>
+          <input class="field-input" id="jt-conges-delai" type="number" value="0" min="0" style="width:100px;margin-top:4px;">
+        </div>
+        <!-- Fin de délai : jours calendriers uniquement -->
+        <div id="delai-fin-row" style="margin-top:10px;display:none;">
+          <div class="delai-item" style="display:inline-block;">
+            <div class="delai-item-label">Fin du délai contractuel</div>
+            <div class="delai-item-val" id="jt-delai-fin-display" style="font-size:12px;">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION A : OUVRIERS -->
+    <div class="jt-section">
+      <div class="jt-section-header">
+        <span class="jt-section-label">A</span>
+        <span class="jt-section-title">Ouvriers</span>
+      </div>
+      <div class="jt-section-body">
+        <div class="col-header">
+          <span class="col-grow">Profession / Catégorie</span>
+          <span class="col-narrow">Nbre</span>
+          <span style="width:28px"></span>
+        </div>
+        <div class="dynamic-table" id="table-ouvriers"></div>
+        <button class="btn-add-row" onclick="addRow('ouvriers', ['profession','nbre'], ['Profession/catégorie','Nbre'])">+ Ajouter</button>
+        <div class="total-bar">
+          <span class="total-label">Nombre total d'ouvriers</span>
+          <span class="total-val" id="total-ouvriers">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION B : TRAVAUX EXÉCUTÉS -->
+    <div class="jt-section">
+      <div class="jt-section-header">
+        <span class="jt-section-label">B</span>
+        <span class="jt-section-title">Travaux exécutés</span>
+      </div>
+      <div class="jt-section-body">
+        <div id="jt-travaux-complet">
+          <textarea class="field-textarea" id="jt-travaux" placeholder="Description des travaux exécutés ce jour..." style="min-height:100px;"></textarea>
+        </div>
+        <div id="jt-travaux-conjoint" style="display:none;">
+          <label class="field-label" style="margin-bottom:6px;display:block;">Travaux SPGE</label>
+          <textarea class="field-textarea" id="jt-travaux-spge" placeholder="Travaux SPGE exécutés ce jour..." style="min-height:80px;margin-bottom:10px;"></textarea>
+          <label class="field-label" style="margin-bottom:6px;display:block;">Travaux Voirie</label>
+          <textarea class="field-textarea" id="jt-travaux-voirie" placeholder="Travaux Voirie exécutés ce jour..." style="min-height:80px;"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION C : MATÉRIEL EN SERVICE -->
+    <div class="jt-section">
+      <div class="jt-section-header">
+        <span class="jt-section-label">C</span>
+        <span class="jt-section-title">Matériel en service</span>
+      </div>
+      <div class="jt-section-body">
+        <div class="col-header">
+          <span class="col-grow">Description</span>
+          <span class="col-narrow">Nbre</span>
+          <span style="width:28px"></span>
+        </div>
+        <div class="dynamic-table" id="table-materiel-service"></div>
+        <button class="btn-add-row" onclick="addRow('materiel-service', ['description','nbre'], ['Description','Nbre'])">+ Ajouter</button>
+      </div>
+    </div>
+
+    <!-- SECTION D : MATÉRIEL HORS SERVICE -->
+    <div class="jt-section">
+      <div class="jt-section-header">
+        <span class="jt-section-label">D</span>
+        <span class="jt-section-title">Matériel hors service</span>
+      </div>
+      <div class="jt-section-body">
+        <div class="col-header">
+          <span class="col-grow">Description</span>
+          <span class="col-narrow">Nbre</span>
+          <span style="width:28px"></span>
+        </div>
+        <div class="dynamic-table" id="table-materiel-hs"></div>
+        <button class="btn-add-row" onclick="addRow('materiel-hs', ['description','nbre'], ['Description','Nbre'])">+ Ajouter</button>
+        <div style="margin-top:10px;">
+          <label class="field-label">Causes</label>
+          <textarea class="field-textarea" id="jt-materiel-hs-causes" placeholder="Causes du matériel hors service..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION E : MATÉRIAUX -->
+    <div class="jt-section">
+      <div class="jt-section-header">
+        <span class="jt-section-label">E</span>
+        <span class="jt-section-title">Matériaux entrés ce jour</span>
+      </div>
+      <div class="jt-section-body">
+        <textarea class="field-textarea" id="jt-materiaux" placeholder="Désignation et quantités des matériaux entrés ce jour..." style="min-height:80px;"></textarea>
+      </div>
+    </div>
+
+    <!-- SECTION F : ESSAIS -->
+    <div class="jt-section">
+      <div class="jt-section-header">
+        <span class="jt-section-label">F</span>
+        <span class="jt-section-title">Essais sur chantier</span>
+      </div>
+      <div class="jt-section-body">
+        <textarea class="field-textarea" id="jt-essais" placeholder="Description des essais réalisés..."></textarea>
+      </div>
+    </div>
+
+    <!-- SECTION G : ÉCHANTILLONS -->
+    <div class="jt-section">
+      <div class="jt-section-header">
+        <span class="jt-section-label">G</span>
+        <span class="jt-section-title">Échantillons expédiés</span>
+      </div>
+      <div class="jt-section-body">
+        <textarea class="field-textarea" id="jt-echantillons" placeholder="Échantillons expédiés ce jour..."></textarea>
+      </div>
+    </div>
+
+    <!-- SECTION H : ÉVÉNEMENTS IMPRÉVUS -->
+    <div class="jt-section">
+      <div class="jt-section-header">
+        <span class="jt-section-label">H</span>
+        <span class="jt-section-title">Événements imprévus</span>
+      </div>
+      <div class="jt-section-body">
+        <textarea class="field-textarea" id="jt-evenements" placeholder="Événements imprévus, incidents, remarques..."></textarea>
+      </div>
+    </div>
+
+    <!-- SECTION J : DÉCISIONS -->
+    <div class="jt-section">
+      <div class="jt-section-header">
+        <span class="jt-section-label">J</span>
+        <span class="jt-section-title">Décisions prises</span>
+      </div>
+      <div class="jt-section-body">
+        <textarea class="field-textarea" id="jt-decisions" placeholder="Décisions prises lors de la visite..."></textarea>
+      </div>
+    </div>
+
+    <!-- SECTION K : VISITES -->
+    <div class="jt-section">
+      <div class="jt-section-header">
+        <span class="jt-section-label">K</span>
+        <span class="jt-section-title">Visites — Divers</span>
+      </div>
+      <div class="jt-section-body">
+        <textarea class="field-textarea" id="jt-visites" placeholder="Visites, personnes présentes, divers..."></textarea>
+      </div>
+    </div>
+
+    <!-- SIGNATURES -->
+    <div class="jt-section">
+      <div class="jt-section-header">
+        <span class="jt-section-label">Sig.</span>
+        <span class="jt-section-title">Signatures</span>
+      </div>
+      <div class="jt-section-body">
+        <div class="header-grid">
+          <div class="form-group">
+            <label class="field-label">Préposé à la surveillance</label>
+            <input class="field-input" id="jt-prpose" placeholder="Nom du préposé">
+          </div>
+          <div class="form-group">
+            <label class="field-label">Délégué entrepreneur</label>
+            <input class="field-input" id="jt-delegue" placeholder="Nom du délégué">
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- fin journal-body -->
+</div><!-- fin screen-journal -->
+
+<!-- Toast notification -->
+<div class="toast" id="toast"></div>
+
+<script>
 // ══════════════════════════════════════
-//  SERVICE WORKER — Journal de Travaux
-//  Version : 1.0.0
-//  À incrémenter à chaque mise à jour de l'app
+// ÉTAT GLOBAL
+// ══════════════════════════════════════
+let state = {
+  chantiers: {},       // { id: { nom, entreprise, delaiInitial, debutTravaux, heureDebut, heureFin } }
+  journaux: {},        // { chantierId: { dateKey: { ...data } } }
+  currentChantierId: null,
+  currentJournalKey: null,
+};
+
+// Clés de stockage
+const STORAGE_CHANTIERS = 'jt_chantiers_v1';
+const STORAGE_JOURNAUX  = 'jt_journaux_v1';
+
+// ── Persistance ──
+function loadState() {
+  try {
+    const c = localStorage.getItem(STORAGE_CHANTIERS);
+    const j = localStorage.getItem(STORAGE_JOURNAUX);
+    if (c) state.chantiers = JSON.parse(c);
+    if (j) state.journaux  = JSON.parse(j);
+  } catch(e) { console.warn('Erreur chargement état', e); }
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_CHANTIERS, JSON.stringify(state.chantiers));
+  localStorage.setItem(STORAGE_JOURNAUX,  JSON.stringify(state.journaux));
+}
+
+// ── Utilitaires ──
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+function formatDateFR(dateStr) {
+  if (!dateStr) return '—';
+  const [y,m,d] = dateStr.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+function todayStr() {
+  return new Date().toISOString().slice(0,10);
+}
+
+function nextWorkday(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  d.setDate(d.getDate() + 1);
+  while (d.getDay() === 0 || d.getDay() === 6) {
+    d.setDate(d.getDate() + 1);
+  }
+  return d.toISOString().slice(0,10);
+}
+
+function showToast(msg, ok = true) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = ok ? 'var(--success)' : 'var(--danger)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ══════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════
+function showScreen(id) {
+  ['screen-home','screen-chantier','screen-journal'].forEach(s => {
+    const el = document.getElementById(s);
+    el.style.display = 'none';
+  });
+  const target = document.getElementById(id);
+  target.style.display = 'flex';
+  target.style.flexDirection = 'column';
+  window.scrollTo(0,0);
+}
+
+function goHome() { showScreen('screen-home'); renderChantiers(); }
+
+function goChantier() {
+  showScreen('screen-chantier');
+  renderJournaux(state.currentChantierId);
+}
+
+// ══════════════════════════════════════
+// MODALS
+// ══════════════════════════════════════
+function openModal(id) {
+  document.getElementById(id).classList.remove('hidden');
+  // Valeur par défaut date début
+  if (id === 'modal-new-chantier') {
+    document.getElementById('nc-debut').value = todayStr();
+  }
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.add('hidden');
+}
+
+// Fermer en cliquant overlay
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.add('hidden');
+  });
+});
+
+// ══════════════════════════════════════
+// CHANTIERS
+// ══════════════════════════════════════
+function creerChantier() {
+  const nom        = document.getElementById('nc-nom').value.trim();
+  const entreprise = document.getElementById('nc-entreprise').value.trim();
+  const delai      = parseInt(document.getElementById('nc-delai').value) || 200;
+  const debut      = document.getElementById('nc-debut').value || todayStr();
+  const hDebut     = document.getElementById('nc-heure-debut').value || '07:00';
+  const hFin       = document.getElementById('nc-heure-fin').value || '17:30';
+  const surveillance = document.getElementById('nc-surveillance').value;
+  const delaiType    = document.getElementById('nc-delai-type').value;
+  const email        = document.getElementById('nc-email').value.trim();
+
+  if (!nom) { showToast('Intitulé obligatoire', false); return; }
+
+  const id = uid();
+  state.chantiers[id] = { nom, entreprise, delaiInitial: delai, debutTravaux: debut, heureDebut: hDebut, heureFin: hFin, surveillance, delaiType, email, createdAt: todayStr() };
+  state.journaux[id] = {};
+  saveState();
+  closeModal('modal-new-chantier');
+  renderChantiers();
+  // Réinitialiser
+  ['nc-nom','nc-entreprise','nc-delai','nc-email'].forEach(f => document.getElementById(f).value = '');
+  showToast('Chantier créé ✓');
+}
+
+function renderChantiers() {
+  const container = document.getElementById('chantiers-container');
+  const ids = Object.keys(state.chantiers);
+  if (!ids.length) {
+    container.innerHTML = '<div class="empty-state">Aucun chantier.<br>Créez-en un pour commencer.</div>';
+    return;
+  }
+  container.innerHTML = ids.map(id => {
+    const c = state.chantiers[id];
+    const jCount = Object.keys(state.journaux[id] || {}).length;
+    return `<div class="chantier-card" onclick="ouvrirChantier('${id}')">
+      <div class="chantier-dot"></div>
+      <div class="chantier-info">
+        <div class="chantier-name">${c.nom}</div>
+        <div class="chantier-meta">${jCount} journal(ux) · ${c.surveillance === 'conjointe' ? 'Conjointe' : 'Complète'} · ${c.delaiType === 'calendriers' ? 'J.Cal.' : 'J.Ouv.'} · Début ${formatDateFR(c.debutTravaux)}</div>
+      </div>
+      <div class="chantier-arrow">›</div>
+      <button class="btn-delete-chantier" onclick="supprimerChantier(event, '${id}')" title="Supprimer ce chantier">🗑</button>
+    </div>`;
+  }).join('');
+}
+
+function supprimerChantier(event, id) {
+  event.stopPropagation(); // Empêche l'ouverture du chantier
+  const c = state.chantiers[id];
+  const jCount = Object.keys(state.journaux[id] || {}).length;
+  const msg = jCount > 0
+    ? 'Supprimer le chantier "' + c.nom + '" et ses ' + jCount + ' journal(ux) ? Cette action est irréversible.'
+    : 'Supprimer le chantier "' + c.nom + '" ? Cette action est irréversible.';
+  if (confirm(msg)) {
+    delete state.chantiers[id];
+    delete state.journaux[id];
+    saveState();
+    renderChantiers();
+    showToast('Chantier supprimé');
+  }
+}
+
+function ouvrirChantier(id) {
+  state.currentChantierId = id;
+  const c = state.chantiers[id];
+  document.getElementById('chantier-title-display').textContent = c.nom;
+  document.getElementById('chantier-meta-display').textContent = c.entreprise || '';
+  renderJournaux(id);
+  showScreen('screen-chantier');
+}
+
+// ══════════════════════════════════════
+// JOURNAUX
+// ══════════════════════════════════════
+function renderJournaux(chantierId) {
+  const container = document.getElementById('journals-container');
+  const journaux = state.journaux[chantierId] || {};
+  const keys = Object.keys(journaux).sort();
+
+  if (!keys.length) {
+    container.innerHTML = '<div class="empty-state">Aucun journal.<br>Appuyez sur + pour créer le premier.</div>';
+    return;
+  }
+
+  container.innerHTML = keys.reverse().map(key => {
+    const j = journaux[key];
+    const hasData = j.ouvriers?.some(o => o.profession) || j.travaux?.some(t => t.description);
+    const dotClass = hasData ? 'complete' : 'partial';
+    const statusTxt = hasData ? 'Complété' : 'En cours';
+    return `<div class="journal-card" onclick="ouvrirJournal('${chantierId}', '${key}')">
+      <div class="journal-date">${formatDateFR(key)}</div>
+      <div class="journal-info">
+        <div class="journal-status"><span class="status-dot ${dotClass}"></span>${statusTxt} · J.${j.numJournal || '?'}</div>
+      </div>
+      <div class="chantier-arrow">›</div>
+    </div>`;
+  }).join('');
+}
+
+function nouveauJournal() {
+  const chantierId = state.currentChantierId;
+  const c = state.chantiers[chantierId];
+  const journaux = state.journaux[chantierId] || {};
+  const keys = Object.keys(journaux).sort();
+
+  let dateNouveau, numJournal, numFeuille, dataPrecedent = null;
+
+  if (!keys.length) {
+    // Premier journal
+    dateNouveau = todayStr();
+    numJournal = 1;
+    numFeuille = 1;
+  } else {
+    // Copie du dernier journal
+    const dernierKey = keys[keys.length - 1];
+    dataPrecedent = journaux[dernierKey];
+    dateNouveau = nextWorkday(dernierKey);
+    numJournal = (dataPrecedent.numJournal || 0) + 1;
+    numFeuille = (dataPrecedent.numFeuille || 0) + 1;
+  }
+
+  // Calcul jours écoulés
+  const ecoulés = numJournal;
+
+  const nouvelleEntree = creerJournalDepuisPrecedent(dataPrecedent, {
+    chantierId, dateNouveau, numJournal, numFeuille,
+    nom: c.nom, entreprise: c.entreprise,
+    heureDebut: c.heureDebut, heureFin: c.heureFin,
+    delaiInitial: c.delaiInitial, debutTravaux: c.debutTravaux,
+    ecoules: ecoulés,
+  });
+
+  state.journaux[chantierId][dateNouveau] = nouvelleEntree;
+  saveState();
+  ouvrirJournal(chantierId, dateNouveau);
+}
+
+function creerJournalDepuisPrecedent(prev, meta) {
+  if (!prev) {
+    return {
+      date: meta.dateNouveau,
+      numJournal: meta.numJournal,
+      numFeuille: meta.numFeuille,
+      heureDebut: meta.heureDebut,
+      heureFin: meta.heureFin,
+      meteo: '',
+      tempMatin: '', tempSoir: '',
+      conges: 0,
+      delaiInitial: meta.delaiInitial,
+      delaiEcoules: meta.ecoules,
+      delaiIntemp: 0,
+      delaiDecomp: 0,
+      delaiStatage: 0,
+      ouvriers: [{ profession: '', nbre: '' }],
+      travaux:  '',
+      materielService: [{ description: '', nbre: '' }],
+      materielHs: [{ description: '', nbre: '' }],
+      materielHsCauses: '',
+      materiaux: '',
+      essais: '', echantillons: '', evenements: '',
+      decisions: '', visites: '',
+      prepose: '', delegue: '',
+    };
+  }
+
+  // Copie du précédent, adaptation date/délai
+  return {
+    ...prev,
+    date: meta.dateNouveau,
+    numJournal: meta.numJournal,
+    numFeuille: meta.numFeuille,
+    delaiEcoules: meta.ecoules,
+    // Raz des champs de saisie quotidienne
+    meteo: '',
+    tempMatin: '', tempSoir: '',
+    conges: 0,
+    travaux: '',
+    materielHsCauses: '',
+    essais: '', echantillons: '',
+    evenements: '', decisions: '', visites: '',
+    // Garder : ouvriers, matériel, heures, délai
+  };
+}
+
+// ══════════════════════════════════════
+// SAISIE JOURNAL
 // ══════════════════════════════════════
 
-const CACHE_NAME = 'jt-cache-v1';
+// Utilitaires sécurisés
+function setVal(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.value = (val !== undefined && val !== null) ? val : '';
+}
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val || '';
+}
 
-// Fichiers à mettre en cache pour fonctionner hors ligne
-const FICHIERS_A_CACHER = [
-  '/',
-  '/index.html',
-  'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap',
-  'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
+function ouvrirJournal(chantierId, dateKey) {
+  state.currentChantierId = chantierId;
+  state.currentJournalKey = dateKey;
+  const j = state.journaux[chantierId][dateKey];
+  const c = state.chantiers[chantierId];
+  if (!j || !c) { console.error('Journal ou chantier introuvable', chantierId, dateKey); return; }
+
+  // Topbar
+  setText('jt-topbar-date', 'Journal du ' + formatDateFR(dateKey));
+  setText('jt-topbar-meta', 'N°' + j.numJournal + ' · ' + c.nom.slice(0,40));
+
+  // En-tête
+  setVal('jt-chantier-nom', c.nom);
+  setVal('jt-entreprise',   c.entreprise || '');
+  setVal('jt-num-journal',  j.numJournal);
+  setVal('jt-num-feuille',  j.numFeuille);
+  setVal('jt-date',         j.date);
+  setVal('jt-heure-debut',  j.heureDebut || '07:00');
+  setVal('jt-heure-fin',    j.heureFin   || '17:30');
+  setVal('jt-conges',       j.conges || 0);
+  setVal('jt-temp-matin',   j.tempMatin || '');
+  setVal('jt-temp-soir',    j.tempSoir  || '');
+
+  // Météo
+  setVal('jt-meteo', j.meteo || '');
+  document.querySelectorAll('.meteo-chip').forEach(chip => {
+    chip.classList.toggle('selected', chip.dataset.val === j.meteo);
+  });
+
+  // Délai
+  setVal('jt-delai-initial',  j.delaiInitial  || c.delaiInitial || 0);
+  setVal('jt-delai-ecoules',  j.delaiEcoules  || 0);
+  setVal('jt-delai-intemp',   j.delaiIntemp   || 0);
+  setVal('jt-delai-decomp',   j.delaiDecomp   || 0);
+  setVal('jt-delai-statage',  j.delaiStatage  || 0);
+  updateDelaiRestants();
+
+  // Tableaux dynamiques
+  renderTable('ouvriers',         j.ouvriers        || [], ['profession','nbre'], ['Profession/catégorie','Nbre']);
+  renderTable('materiel-service', j.materielService || [], ['description','nbre'], ['Description','Nbre']);
+  renderTable('materiel-hs',      j.materielHs      || [], ['description','nbre'], ['Description','Nbre']);
+
+  // Textareas
+  setVal('jt-travaux',            j.travaux           || '');
+  setVal('jt-travaux-spge',       j.travauxSpge       || '');
+  setVal('jt-travaux-voirie',     j.travauxVoirie     || '');
+  setVal('jt-materiaux',          j.materiaux         || '');
+  setVal('jt-materiel-hs-causes', j.materielHsCauses  || '');
+  setVal('jt-essais',             j.essais            || '');
+  setVal('jt-echantillons',       j.echantillons      || '');
+  setVal('jt-evenements',         j.evenements        || '');
+  setVal('jt-decisions',          j.decisions         || '');
+  setVal('jt-visites',            j.visites           || '');
+  setVal('jt-prepose',            j.prepose           || '');
+  setVal('jt-delegue',            j.delegue           || '');
+
+  updateTotalOuvriers();
+
+  // Listeners délai (sans doublon)
+  ['jt-delai-initial','jt-delai-ecoules','jt-delai-intemp','jt-delai-decomp','jt-delai-statage'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.removeEventListener('input', updateDelaiRestants);
+      el.addEventListener('input', updateDelaiRestants);
+    }
+  });
+
+  // Adapter l'interface selon le type de chantier
+  adapterInterface(c);
+
+  showScreen('screen-journal');
+}
+
+function adapterInterface(c) {
+  const surveillance = c.surveillance || 'complete';
+  const delaiType    = c.delaiType    || 'ouvrables';
+
+  // Section B : travaux
+  const divComplet  = document.getElementById('jt-travaux-complet');
+  const divConjoint = document.getElementById('jt-travaux-conjoint');
+  if (surveillance === 'conjointe') {
+    if (divComplet)  divComplet.style.display  = 'none';
+    if (divConjoint) divConjoint.style.display = 'block';
+  } else {
+    if (divComplet)  divComplet.style.display  = 'block';
+    if (divConjoint) divConjoint.style.display = 'none';
+  }
+
+  // Congés légaux dans en-tête : jours ouvrables seulement
+  const congesRow = document.getElementById('conges-header-row');
+  if (congesRow) congesRow.style.display = delaiType === 'ouvrables' ? '' : 'none';
+
+  // Jours écoulés : automatique pour calendriers, manuel pour ouvrables
+  const ecoulesItem = document.getElementById('delai-ecoules-item');
+  if (ecoulesItem) {
+    const input = document.getElementById('jt-delai-ecoules');
+    if (delaiType === 'calendriers') {
+      // Calculer automatiquement depuis la date du journal et le début des travaux
+      const dateJournal = document.getElementById('jt-date').value;
+      const debutTravaux = c.debutTravaux;
+      if (dateJournal && debutTravaux) {
+        const diff = Math.round((new Date(dateJournal) - new Date(debutTravaux)) / 86400000);
+        if (input) input.value = Math.max(0, diff);
+      }
+      if (input) input.readOnly = true;
+      if (input) input.style.color = 'var(--text2)';
+    } else {
+      if (input) input.readOnly = false;
+      if (input) input.style.color = 'var(--accent)';
+    }
+  }
+
+  // Fin de délai : jours calendriers seulement
+  const finRow = document.getElementById('delai-fin-row');
+  if (finRow) finRow.style.display = delaiType === 'calendriers' ? 'block' : 'none';
+  if (delaiType === 'calendriers') updateFinDelai(c);
+}
+
+function updateFinDelai(c) {
+  const dateJournal = document.getElementById('jt-date') ? document.getElementById('jt-date').value : '';
+  const restants    = parseInt(document.getElementById('jt-delai-restants-display') ? document.getElementById('jt-delai-restants-display').textContent : '0') || 0;
+  const el = document.getElementById('jt-delai-fin-display');
+  if (el && dateJournal) {
+    const fin = new Date(dateJournal);
+    fin.setDate(fin.getDate() + restants);
+    el.textContent = formatDateFR(fin.toISOString().slice(0,10));
+  }
+}
+
+function updateDelaiRestants() {
+  const init    = parseInt(document.getElementById('jt-delai-initial') ? document.getElementById('jt-delai-initial').value : 0)  || 0;
+  const ecoules = parseInt(document.getElementById('jt-delai-ecoules') ? document.getElementById('jt-delai-ecoules').value : 0)  || 0;
+  const intemp  = parseInt(document.getElementById('jt-delai-intemp')  ? document.getElementById('jt-delai-intemp').value  : 0)  || 0;
+  const decomp  = parseInt(document.getElementById('jt-delai-decomp')  ? document.getElementById('jt-delai-decomp').value  : 0)  || 0;
+  const statage = parseInt(document.getElementById('jt-delai-statage') ? document.getElementById('jt-delai-statage').value : 0)  || 0;
+  const conges  = parseInt(document.getElementById('jt-conges')        ? document.getElementById('jt-conges').value        : 0)  || 0;
+
+  // Détermine le type de délai du chantier courant
+  const c = state.chantiers[state.currentChantierId] || {};
+  const delaiType = c.delaiType || 'ouvrables';
+
+  let restants;
+  if (delaiType === 'ouvrables') {
+    // Formule jours ouvrables : =(F6-G6+I6+J6)+H6+H4
+    restants = (init - ecoules + decomp + statage) + intemp + conges;
+  } else {
+    // Formule jours calendriers : =F6-G6+I6+J6
+    restants = init - ecoules + decomp + statage;
+  }
+
+  const el = document.getElementById('jt-delai-restants-display');
+  if (el) {
+    el.textContent = restants;
+    el.style.color = restants < 0 ? 'var(--danger)' : restants < 10 ? 'var(--accent)' : 'var(--success)';
+  }
+
+  // Mettre à jour la fin de délai si jours calendriers
+  if (delaiType === 'calendriers') updateFinDelai(c);
+}
+
+// ── Météo ──
+function selectMeteo(chip) {
+  document.querySelectorAll('.meteo-chip').forEach(c => c.classList.remove('selected'));
+  chip.classList.add('selected');
+  document.getElementById('jt-meteo').value = chip.dataset.val;
+}
+
+// ── Listes prédéfinies ──
+const LISTE_OUVRIERS = [
+  'Machiniste(s)',
+  'Chauffeur(s)',
+  'Chef(s) d\'équipe',
+  'Contremaître(s)',
+  'Ouvrier(s)',
+  '— Autre (saisir manuellement) —'
 ];
 
-// ── Installation : mise en cache initiale ──
-self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('[SW] Mise en cache initiale');
-        // On tente de cacher chaque fichier individuellement
-        // pour ne pas bloquer si un CDN est inaccessible
-        return Promise.allSettled(
-          FICHIERS_A_CACHER.map(url =>
-            cache.add(url).catch(err => console.warn('[SW] Impossible de cacher:', url, err))
-          )
-        );
-      })
-      .then(() => self.skipWaiting()) // Activer immédiatement sans attendre
-  );
-});
+const LISTE_MATERIEL = [
+  'Pelle(s) à pneus',
+  'Pelle(s) à chenilles',
+  'Mini-pelle(s)',
+  'Pelle(s) en butte',
+  'Chargeur(s) sur pneus',
+  'Plaque(s) vibrante',
+  'Rouleau(x) à pneus',
+  'Rouleau(x) à billes',
+  'Rouleau(x) mixte',
+  'Rouleau(x) pieds de mouton',
+  'Camion(s) 15 Tonnes',
+  'Camion(s) 20 Tonnes',
+  'Camion(s) semi-remorque',
+  'Camion(s) aspirateur',
+  'Tracteur(s) + benne',
+  'Camion(s) mixer',
+  'Camion(s) pompe',
+  'Camion(s) brosses',
+  'Dumper(s) à pneus',
+  'Dumper(s) à chenilles',
+  'Rabotteuse(s)',
+  'Finisher',
+  'Bull pousseur',
+  'Niveleuse(s)',
+  'Grue(s) tour',
+  'Crible(s)',
+  'Slipform',
+  'Nacelle(s)',
+  'Groupe(s) électrogène(s)',
+  'Pas d\'activité lors de la visite',
+  'Pas de matériel présent sur le chantier',
+  '— Autre (saisir manuellement) —'
+];
 
-// ── Activation : nettoyage des anciens caches ──
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys
-          .filter(key => key !== CACHE_NAME)
-          .map(key => {
-            console.log('[SW] Suppression ancien cache:', key);
-            return caches.delete(key);
-          })
-      )
-    ).then(() => self.clients.claim()) // Prendre le contrôle immédiatement
-  );
-});
+// ── Tableaux dynamiques ──
+function renderTable(tableId, rows, fields, placeholders) {
+  const container = document.getElementById('table-' + tableId);
+  container.innerHTML = '';
+  if (!rows.length) rows = [Object.fromEntries(fields.map(f => [f, '']))];
+  rows.forEach((row, i) => {
+    container.appendChild(buildRow(tableId, fields, placeholders, row, i));
+  });
+  if (tableId === 'ouvriers') updateTotalOuvriers();
+}
 
-// ── Interception des requêtes ──
-self.addEventListener('fetch', event => {
-  // Ne pas intercepter les requêtes non-GET
-  if (event.request.method !== 'GET') return;
+function buildComboField(liste, currentVal, field, onchange, nbreInput) {
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'flex:1;display:flex;flex-direction:column;gap:3px;';
 
-  // Stratégie : Cache d'abord, réseau en fallback
-  // Si hors ligne et en cache → sert le cache
-  // Si en ligne → sert le réseau ET met à jour le cache en arrière-plan
-  event.respondWith(
-    caches.match(event.request).then(cached => {
-      const networkFetch = fetch(event.request)
-        .then(response => {
-          // Mettre à jour le cache avec la nouvelle version
-          if (response && response.status === 200) {
-            const responseClone = response.clone();
-            caches.open(CACHE_NAME).then(cache => {
-              cache.put(event.request, responseClone);
-            });
+  const isCustom = currentVal && !liste.includes(currentVal) && currentVal !== '';
+  const selectVal = isCustom ? '— Autre (saisir manuellement) —' : (currentVal || '');
+
+  // Select — style sobre, sans surbrillance colorée
+  const sel = document.createElement('select');
+  sel.dataset.field = field;
+  sel.style.cssText = [
+    'width:100%',
+    'background:var(--bg)',
+    'border:1px solid var(--border)',
+    'border-radius:4px',
+    'padding:8px 10px',
+    'color:var(--text)',
+    'font-family:var(--sans)',
+    'font-size:13px',
+    'outline:none',
+    'appearance:none',
+    '-webkit-appearance:none',
+  ].join(';');
+
+  const optVide = document.createElement('option');
+  optVide.value = '';
+  optVide.textContent = '— Choisir —';
+  sel.appendChild(optVide);
+
+  liste.forEach(item => {
+    const opt = document.createElement('option');
+    opt.value = item;
+    opt.textContent = item;
+    if (item === selectVal) opt.selected = true;
+    sel.appendChild(opt);
+  });
+
+  // Champ texte libre (caché par défaut)
+  const txt = document.createElement('input');
+  txt.placeholder = 'Saisir manuellement...';
+  txt.style.cssText = [
+    'display:none',
+    'width:100%',
+    'background:var(--bg)',
+    'border:1px solid var(--accent)',
+    'border-radius:4px',
+    'padding:8px 10px',
+    'color:var(--text)',
+    'font-family:var(--sans)',
+    'font-size:13px',
+    'outline:none',
+  ].join(';');
+  txt.dataset.field = field + '_custom';
+
+  if (isCustom) {
+    txt.value = currentVal;
+    txt.style.display = 'block';
+    sel.dataset.field = field + '_select';
+    txt.dataset.field = field;
+  }
+
+  sel.addEventListener('change', () => {
+    const v = sel.value;
+    if (v === '— Autre (saisir manuellement) —') {
+      txt.style.display = 'block';
+      txt.focus();
+      sel.dataset.field = field + '_select';
+      txt.dataset.field = field;
+    } else {
+      txt.style.display = 'none';
+      sel.dataset.field = field;
+      txt.dataset.field = field + '_custom';
+      txt.value = '';
+      // Mettre nbre à 1 par défaut si un matériel est choisi
+      if (nbreInput && v !== '' && v !== '— Choisir —') {
+        if (!nbreInput.value || nbreInput.value === '0') nbreInput.value = '1';
+      }
+    }
+    if (onchange) onchange();
+  });
+
+  wrap.appendChild(sel);
+  wrap.appendChild(txt);
+  return wrap;
+}
+
+function buildRow(tableId, fields, placeholders, values = {}, idx = 0) {
+  const div = document.createElement('div');
+  div.className = 'dynamic-row';
+  div.dataset.idx = idx;
+  div.style.flexWrap = 'wrap';
+
+  // Créer d'abord le champ nbre pour pouvoir le passer au combo
+  let nbreInputRef = null;
+
+  fields.forEach((field, fi) => {
+    if ((tableId === 'ouvriers' && field === 'profession') ||
+        (tableId === 'materiel-service' && field === 'description') ||
+        (tableId === 'materiel-hs' && field === 'description')) {
+
+      const liste = (tableId === 'ouvriers') ? LISTE_OUVRIERS : LISTE_MATERIEL;
+      // On passera nbreInputRef après sa création — on stocke le wrap pour update
+      const combo = buildComboField(liste, values[field] || '', field,
+        tableId === 'ouvriers' ? updateTotalOuvriers : null,
+        null); // nbreInput sera lié après
+      combo.dataset.comboWrap = '1';
+      div.appendChild(combo);
+
+    } else {
+      const input = document.createElement('input');
+      input.style.cssText = [
+        'background:var(--bg)',
+        'border:1px solid var(--border)',
+        'border-radius:4px',
+        'padding:8px 10px',
+        'color:var(--text)',
+        'font-family:var(--sans)',
+        'font-size:13px',
+        'outline:none',
+        'width:70px',
+        'text-align:center',
+      ].join(';');
+      input.placeholder = placeholders[fi] || field;
+      input.value = values[field] || '';
+      input.dataset.field = field;
+
+      if (tableId === 'ouvriers' && field === 'nbre') {
+        input.type = 'number';
+        input.min = '0';
+        input.addEventListener('input', updateTotalOuvriers);
+        nbreInputRef = input;
+      }
+      if ((tableId === 'materiel-service' || tableId === 'materiel-hs') && field === 'nbre') {
+        input.type = 'number';
+        input.min = '0';
+        nbreInputRef = input;
+      }
+      div.appendChild(input);
+    }
+  });
+
+  // Lier nbreInput au combo si présent
+  if (nbreInputRef) {
+    const comboWrap = div.querySelector('[data-combo-wrap]') || div.querySelector('div');
+    if (comboWrap) {
+      const sel = comboWrap.querySelector('select');
+      if (sel) {
+        sel.addEventListener('change', () => {
+          const v = sel.value;
+          if (v && v !== '' && v !== '— Autre (saisir manuellement) —') {
+            if (!nbreInputRef.value || nbreInputRef.value === '0') {
+              nbreInputRef.value = '1';
+              if (nbreInputRef.dataset.field === 'nbre' &&
+                  document.getElementById('table-ouvriers') &&
+                  document.getElementById('table-ouvriers').contains(nbreInputRef)) {
+                updateTotalOuvriers();
+              }
+            }
           }
-          return response;
-        })
-        .catch(() => {
-          // Réseau inaccessible — on retourne ce qu'on a en cache
-          return cached;
         });
+      }
+    }
+  }
 
-      // Retourner le cache immédiatement si disponible,
-      // sinon attendre le réseau
-      return cached || networkFetch;
-    })
+  const btn = document.createElement('button');
+  btn.className = 'btn-del-row';
+  btn.textContent = '×';
+  btn.style.flexShrink = '0';
+  btn.onclick = () => { div.remove(); if (tableId === 'ouvriers') updateTotalOuvriers(); };
+  div.appendChild(btn);
+  return div;
+}
+
+function addRow(tableId, fields, placeholders) {
+  const container = document.getElementById('table-' + tableId);
+  const idx = container.children.length;
+  container.appendChild(buildRow(tableId, fields, placeholders, {}, idx));
+}
+
+function updateTotalOuvriers() {
+  const rows = document.querySelectorAll('#table-ouvriers .dynamic-row');
+  let total = 0;
+  rows.forEach(row => {
+    const nbre = row.querySelector('[data-field="nbre"]');
+    if (nbre) total += parseInt(nbre.value) || 0;
+  });
+  document.getElementById('total-ouvriers').textContent = total;
+}
+
+// ── Lire les tableaux ──
+function getTableData(tableId, fields) {
+  const rows = document.querySelectorAll('#table-' + tableId + ' .dynamic-row');
+  return Array.from(rows).map(row => {
+    const obj = {};
+    fields.forEach(f => {
+      // Cherche d'abord data-field exact, sinon cherche _custom (saisie manuelle combo)
+      let el = row.querySelector('[data-field="' + f + '"]');
+      obj[f] = el ? el.value : '';
+    });
+    return obj;
+  }).filter(row => Object.values(row).some(v => v !== ''));
+}
+
+// ── Sauvegarde ──
+function sauvegarderJournal() {
+  const chantierId = state.currentChantierId;
+  const dateKey    = state.currentJournalKey;
+
+  const data = {
+    date:         document.getElementById('jt-date').value,
+    numJournal:   parseInt(document.getElementById('jt-num-journal').value) || 1,
+    numFeuille:   parseInt(document.getElementById('jt-num-feuille').value) || 1,
+    heureDebut:   document.getElementById('jt-heure-debut').value,
+    heureFin:     document.getElementById('jt-heure-fin').value,
+    meteo:        document.getElementById('jt-meteo').value,
+    tempMatin:    document.getElementById('jt-temp-matin').value,
+    tempSoir:     document.getElementById('jt-temp-soir').value,
+    conges:       parseInt(document.getElementById('jt-conges').value) || 0,
+    delaiInitial: parseInt(document.getElementById('jt-delai-initial').value) || 0,
+    delaiEcoules: parseInt(document.getElementById('jt-delai-ecoules').value) || 0,
+    delaiIntemp:  parseInt(document.getElementById('jt-delai-intemp').value)  || 0,
+    delaiDecomp:  parseInt(document.getElementById('jt-delai-decomp').value)  || 0,
+    delaiStatage: parseInt(document.getElementById('jt-delai-statage').value) || 0,
+    ouvriers:     getTableData('ouvriers',         ['profession','nbre']),
+    travaux:      document.getElementById('jt-travaux') ? document.getElementById('jt-travaux').value : '',
+    travauxSpge:  document.getElementById('jt-travaux-spge')   ? document.getElementById('jt-travaux-spge').value   : '',
+    travauxVoirie: document.getElementById('jt-travaux-voirie') ? document.getElementById('jt-travaux-voirie').value : '',
+    materielService: getTableData('materiel-service', ['description','nbre']),
+    materielHs:   getTableData('materiel-hs',       ['description','nbre']),
+    materielHsCauses: document.getElementById('jt-materiel-hs-causes') ? document.getElementById('jt-materiel-hs-causes').value : '',
+    materiaux:    document.getElementById('jt-materiaux') ? document.getElementById('jt-materiaux').value : '',
+    essais:       document.getElementById('jt-essais').value,
+    echantillons: document.getElementById('jt-echantillons').value,
+    evenements:   document.getElementById('jt-evenements').value,
+    decisions:    document.getElementById('jt-decisions').value,
+    visites:      document.getElementById('jt-visites').value,
+    prepose:      document.getElementById('jt-prepose').value,
+    delegue:      document.getElementById('jt-delegue').value,
+    savedAt:      new Date().toISOString(),
+  };
+
+  // Si la date a changé, déplacer la clé
+  if (data.date !== dateKey) {
+    delete state.journaux[chantierId][dateKey];
+    state.currentJournalKey = data.date;
+  }
+
+  state.journaux[chantierId][state.currentJournalKey] = data;
+  saveState();
+  showToast('Journal sauvegardé ✓');
+
+  // Mettre à jour topbar
+  document.getElementById('jt-topbar-date').textContent = `Journal du ${formatDateFR(data.date)}`;
+}
+
+// ══════════════════════════════════════
+// SYNC / RÉSEAU
+// ══════════════════════════════════════
+function updateSyncStatus() {
+  const dot   = document.getElementById('sync-dot');
+  const label = document.getElementById('sync-label');
+  if (navigator.onLine) {
+    dot.classList.add('online');
+    label.textContent = 'En ligne — synchronisation disponible';
+  } else {
+    dot.classList.remove('online');
+    label.textContent = 'Hors ligne — données sauvegardées localement';
+  }
+}
+
+function showSyncInfo() {
+  showToast(navigator.onLine ? 'En ligne ✓' : 'Hors ligne — synchro différée', navigator.onLine);
+}
+
+window.addEventListener('online',  updateSyncStatus);
+window.addEventListener('offline', updateSyncStatus);
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+function init() {
+  loadState();
+  updateSyncStatus();
+  renderChantiers();
+  showScreen('screen-home');
+
+  // Date accueil
+  const now = new Date();
+  document.getElementById('home-date-display').textContent =
+    now.toLocaleDateString('fr-BE', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+}
+
+init();
+</script>
+
+<!-- SheetJS pour export Excel -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+
+// ══════════════════════════════════════
+// EXPORT EXCEL — FORMAT EXACT DU MODÈLE JT
+// ══════════════════════════════════════
+
+// Templates xlsx encodés en base64 (générés depuis les modèles officiels)
+const TEMPLATE_CAL_B64 = "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";
+const TEMPLATE_OUV_B64 = "UEsDBBQAAAAIADM32VxGx01IlQAAAM0AAAAQAAAAZG9jUHJvcHMvYXBwLnhtbE3PTQvCMAwG4L9SdreZih6kDkQ9ip68zy51hbYpbYT67+0EP255ecgboi6JIia2mEXxLuRtMzLHDUDWI/o+y8qhiqHke64x3YGMsRoPpB8eA8OibdeAhTEMOMzit7Dp1C5GZ3XPlkJ3sjpRJsPiWDQ6sScfq9wcChDneiU+ixNLOZcrBf+LU8sVU57mym/8ZAW/B7oXUEsDBBQAAAAIADM32Vza0k7LLgEAAJ0CAAARAAAAZG9jUHJvcHMvY29yZS54bWzFks1uwjAQhF8F5W5sJyEFK+TQPwmptEhEasXNchawiBPLdhV4+zopCSB679Gzs9/OypsKzURtYGVqDcZJsKOjKivLhJ4He+c0w9iKPShux95R+eK2Noo7/zQ7rLk48B3gkJAEK3C84I7jFoj0QAyytBBMGOCuNmd8IQa8/jZlBysEhhIUVM5iOqY4yNaL5cvH+2K04s5IcUjxhdMyHRhlfwUoBnCn/knvKjg4O49WDq6macZN1Pn8KhR/Ld/W3dZIVtbxSoDvspK5k4Z50E/+jJ6e89cgC0kYITJFNMnJjEWUhbNNm/Um3yWwqgu5lf+dOEEkQeEkJwmbPLDoOnEfMEv9dZTcuuVZeDzdf8m9pe9aGVm1i/thMaIEhTSnMYunjE42Q19v6oTbS8x+AFBLAwQUAAAACAAzN9lcpboJJ50GAADHIAAAEwAAAHhsL3RoZW1lL3RoZW1lMS54bWztWU9v2zYUvw/YdxB0dyXbkv8EdQpbtpu2SRM0boceGZm2GFOiQdJJjKLA0J52GTCgG3YZsNsGDMMKrMCKXXbYRwnQYus+xJ4k/xFtqk3atOiwOIAtkr/3+ON7j48v1NVrJyE1jjAXhEUNs3jFNg0c+axPomHDvNvrFmqmISSK+oiyCDfMKRbmtc1PP7mKNmSAQ2yAfCQ2UMMMpBxvWJbwoRuJK2yMIxgbMB4iCU0+tPocHYPekFol265YISKRaUQoBLW94M8fQdnuYEB8bG7OtXcofEVSxB0+5ft+MmUqksH2R8X4R0yFR7lxhGjDhIn67LiHT6RpUCQkDDRMO/mY1uZVayFEZY5sRq6bfGZyM4H+qJTI8eHBQtBxXKfSXOgvpfrXcZ1qp9KpLPQlAOT7sNKiRme15DkzbAaUPmp0t6vtclHBZ/SX1/BNN/5T8OUl3lnDd7ve0oYZUProruHdVr3VVvW7S3xlDV+1m22nquATUEBJNFpD226l7M1Xu4AMGN3Swuuu062WZvAlyspEVyofybxYC9Eh410AJM5FkkSGnI7xAPmA8xAlB5wY22QYQOCNUcQEdNslu2uX4Tv+c5KnxKNoA6OMdNrli7WumI8hfE7GsmHeBK1mBvLi+fPTR89OH/12+vjx6aNfZnOvy22haJiVe/XDV/9897nx96/fv3rytR4vsviXP3/x8vc/XqdeKrS+efry2dMX3375109PNPAmRwdZeI+EWBi38bFxh4WwQM0E+ICfT6IXIKJIoACQGmBHBgrw9hRRHa6FVRPe45ApdMDrk0OF637AJ5JogLeCUAHuMEZbjGuXcyueK7ucSTTUT84nWdwdhI50c3srDu5MxhDyRKfSC7BCc4+Ct9EQR1ga8RgbYawRu0+IYtcd4nMm2EAa94nRQkRrkh45kHqhLRKCX6Y6guBqxTY794wWozr1bXykImFbIKpTialixutoIlGoZYxCmkVuIxnoSO5Pua8YXEjw9BBTZnT6WAidzC6fKnRvQYbRu32HTkMVySUZ6ZDbiLEsss1GXoDCsZYziYIs9oYYQYgiY49JLQmm7pC4DX5AUa677xEsz7et70IG0gdIPDLhui2Bmbofp3SAsE55k4dKdm1yoo2O1mSohPY2xhQdoz7Gxt0bOjwbMz3pmwFklS2ss81NpMZq3I6wwEZS12gcS4QSsvt4yHL47ExXEs8URSHieZpvj9SQ6cApp02lu9QfKamU8HjT6knsihCdSetegJSwittCH69THp13j4HM4VvI4HPLQGI/s216iGJ9wPQQFBi6dAsiE71IvJ0SsYlWbqBu2qUbrJV6JyTRG4uflbLH/TBlz3sreC6+1MlLKasFTh7uP1jWtNEk2sNwklxWNZdVzf+xqsnby5e1zGUtc1nLfLBaZlm+WNlbnkRLmHvlMyCU7sspxdsiKXwE7P1+FzqTRiK0uGEaB/A4m07BDTlKng3O5GdEBvsBGsM0xWSGoZipHgpjzASUTmau7qT0moQ7rJ/2FovzS00QQHLZD6XXvB8KNZn2VqrL27uF+qQ1FFkCbqL07CQyk6kkyhoS1fLZSBTti2JR17CoFV/Hwsp4BQ4nA8UX4q6TMoJwg5Dux35K5efevXBP5xlTXXZJs7y6c2GeVkhkwk0lkQnDAA6P1e4L9nW9rnd1SUujWnsfvrbWcwON1JZxDHuu7IIaH40b5gD+aYLHcAz6RJypEB1GDdOXM0O/TWYZcyHbSAQpLBlK1x8SiblBSQixnnUDjZbciqWq/fGSq9sfn+WsVSfjwQD7Mqdn2YSxVIl29B3BcYNNgPR+0D82DuiE30FgKLdajA3YJ0IurNknPBPcSyuupKvZVlRetiy3KKLjAM1OlGwyT+HJ84JOZh0J09VVWToTHgy7F3HqvlloJWnmHCDV3Cz2/g75DKuynpWrzXX1mv36U+LdD4QMtZqeWllPLe/suMCCIDNdJcdupVxvvuNpsBq1VqauTFprb7XZwSFEfhuq1QmVIr0cO4Hy25u/j0wzQdI7zy4n0phw0jAf2G7T8UquV7BrbqfglB27UHOb5ULTdcvFjlu0263SQzCKDMKim87dhX/26XT21j7pX3tzH85L7Ss+Cy2W1MFWIpy8uS+WlDf3aZ1s9OJx0yBgmQeVUrderrcqhXq52S047VatUPcqrUK74lXb3bbn1urdh6ZxlICdZtlzKp1aoVL0vIJTsWP6tXqh6pRKTafarHWc5sOZrWHl89+5eRNem/8CUEsDBBQAAAAIADM32VxxxI4r+wAAACkCAAATAAAAZG9jUHJvcHMvY3VzdG9tLnhtbLWS0WqDMBSGX0Vy73KqUxtRQaNCLwaDld0HjVZoTEhS1zL27ots6y5Gbwq7/Dk/53wfnOxZS8W1nbjxzuI4mxwdrFUpxqY7cMHMgxvPbjJILZh1UY9YDsPU8Vp2J8FniwOAGHcnY6Xw1XUdKrLvcPFmJniOqJyt6+8viu965A3CTn2O3uuI1nUEkR80hPob2FQ+CUniwxYgqALakrL5QJ5ay4Hbutj0qN6M1V/A6WLvZe5lt+qb1xXJAcMZ3HmACqqSVnEYkw2lyeOWtHVM2qZtmpImYUIyfGUoMvxj+cf3ifcTe+F6cYd3go18z0Zzn3f4r963fPDvcxSfUEsDBBQAAAAIADM32VxF2kURARIAANhrAAAYAAAAeGwvd29ya3NoZWV0cy9zaGVldDEueG1spV1dc9s4tny/v4KVrdp9urEIkJTESVxlmiIpMplJbbJznxmZibkjiVqJcjLz6y8gApDtNNt29mXGYRvnAH0OPpog4Dffuv0fh9um6b3vm/X28PbVbd/v4ouLw+q22dSH192u2SrkS7ff1L365/7rxWG3b+qbU6HN+kJMJtHFpm63ry7fnJ592Hur7qb5td40b19lzbFd+wrqjv263TYKPBw3m3r/Z9Ksu29vX/mv7IN/tl9ve/3g4vLNrv7afGz6f+3U739p+0/dB/XAYBfGy+Wbm3bTbA9tt/X2zZe3r678+IMvI/07p1/5vW2+He797PX154/Nuln1zc3J8V9dt/m4qtfash/e+/evurXrx08/akPv6j9VU7Q5BU8mrzxN4Oeu+0M/Wiq7E83DyYuuWK3+d9dcN2tl7YNQbf3PqarqR9cSXfD+z7bK2YlyRcDn+tBcd+v/a2/6W+30lXfTfKmP6/78cP5azEI/jETowH9234rGUBpqb6tufTj91/s2FApeByKcznxdaHU89N3GulD17P/UtASqypt2e3q0qb+bCNyz4Uf3PD9lRBgj4pGR6QtsSGNDPrIhxAuMBMZI8Lg1wetZGAbRbKqMfG4OfdaeMvJJg6ExGP7QsudTHBkb0SMb0WjRqSk5NSWnj0rOXtaImTEze9yIp4vOTdH5D+2f+pO5fCmdOseHdJs8jpB4oSWXuI8zd/6CfPFt5vo/ZEx0L8IvqphNGf9xzryoYjZp/EjOTnW7GLr5aQRJ676+fLPvvnn7U+nTWKB6vTPsBghlWdtQGdDftqs/ku70UFVLl7yysIqyeq4H+ouVwRKDTSc/YtcESy3m/4gtBkwO7tqtnjc+9nv1K61qWX9Zdsf9tl5727//zZ9Gv8RvLnpVWmPORDaYCMWP1nNSq2LAZiOOT5PZa+J2OZQHPJXccnr1aeEhi5Wp7cPKXqiYusAKE9jw9fSlgRWGCkBTYjEJAkuw1GIBCOyABZMRFormuH/tfdrXd6+9tIF8ZNZ8CCJrsQhE1mD+iOu//02I4BcUUmt0CoJKHFYWm/2I/WZ4EGPZoGoj5S+fj72azA9erwipj99B5T4YJ9F0PD3kz6eHJOkhSXoQLJUkPQYsnI7Qsujr3qv7TXfY3Q4M7dv/HBuYJtYN6Iq5wWZoADBVAMWWcjzYJcEq6w6MdO8tJsbjF/x8/AISv4DEj2BpQOIX8Pj92m0+7xslDrZfh/AdvPXww1eV3ri7BySOAYnjgEUAWgYkjgSrgvEO/T54Oo6hjeMLgxga0yAYicVAMK4JlloMDKKLAQvGBkozNq3rFgfMmB4b2m7Oxdtt27f1GhjJnzBSeoOVVXc0CXQAVoonrbTbvtns7FDSICPL57Vn1W12PTRQPmHgoAY1pW3R1G9KytH679V6s972yO2HoTDJx+gn8zEyuRPhaunXCPFhV6/UMnWnKtjs75pXl/WN+vGg+/5mt276Rs1r3vofzbbfN7t9q4D6Tj1ovO1x0+w7jX76/cpreq83+dLsbrtt44GWJhFZgRIstRhagRoM9J3MQGj9MQ4V49ByHCrHocpAYKB6Hz0V+unPTylTMqVYDE0pBEsthqaUARtLtstP5/5b90c1uXjDQs7zJrPbyQQNUMbbDKzncouBIb6wGFoamFqOrO5xl3A19SNc05LUpjLYHCT2b9P7q0uYALOfT4AZSYAZSQCCpTOSAAOGWM9m4507J1hhMBTIARKgVGkgMFpUBiKEz3+e8DkhfE4IJ1g6J4QP2By0MyMmc4IVBkM2l6RcSbAKN+EB6Vo0/yzruuzossuBaN3FwNSBaOVlwDkY0zNmNWdgYUABGrK0GChXEqyyWEjI9wH5wyvtt+f3Yw+jEZzpN+GZjy2brrz/9X473qlV2x4tf66dAZT+BoyCEeOJMv5pEN1e892s8I79+FJz4dyhFYMD0ZrB1mVshtPvRP7n9EoELXFN6WCs9LVqyfu6d0vctddsPT0BtSu05Fxae+hlB8Eqi81IQoinF5wu/OYFCex8BhsL3od990WtNdtue7GyLf/aqbbDNDHGwjHJqgQrKJeachGYmhcG83E/tiBafjgQrT8cOPZaNG0Oq32709tOMLTCzG1ocnMgmt5eTtLDwMsXBH54IYL0d2IwMQEz4bUFQcHUGoXBIm9uMuYxtyAIZOEKwkGXvUhiLisLsl4WvIDs4a0FyrbEYCNkB4TsgJBNXq9kzGNuQUh2wMhmb3uYy8qCjOzwzGVIEjdkXIaEy5BwGTIuicfcgpDLkHFJXJbMZWVBxuUz3kc4siOSuBEjOyJkR4TsiJFNPOYWhGRHjGzismQuKwsysqdnLqckcaeMyynhcjoaoIU/ZVwSj7kFIZdTxiVxWTKXlQUZl/fyckbycsa4nBEuZyQvZ4xL4jG3IOTSFgSL2aUD0fsqB6L35xacEy6fp5Md33PC95zxPSd8zwnfc8Y38ZhbEPJtC45tnKQ/rOJvu/2BruOtSdCKkoGVA0mYxPOEtQ2TmIyHyWA4TBZEYTLY9GXv3JB2M5ZwUFn9cguioFrMH9vs5sv10pVHK3ID/uyKXPjPn2uFT4Lns+CZrzjQq3eDwT4mfBYO4jG3IAyHLYjmB+ayZC4rC5L5QbxA9wpByBaMbEF6iiBkky8YMuYxtyAkWzCyicuSuawsyMiWZy4l4ZJJSUGkJDG6EExKMo+5IFJSMCnJXJbMZSWelpLi/DpOEKUomFI0IB4EgtGV50Iwpcg85oIoRYuNbsZe18cD3gZ2FULfdjGwck4lofosJEVIqGZCUhAhKYiQFExIMo+5IELSYmgLdclclsxlJaCQPGHvDAbWpe8h9DAC0TkCRF0Kpi4tCCMwbnQhmLpkHnMLwggYDO45O6toFe9A+FlbhFbxJgIDhvakDcQi8LxdaRelcYmZCKZbDSjBuio1GO4nTLcyj7kgutUVHP3o7eHa/7Qlse339gOqVeP9uzvu4ZBlTSMNwMDKgTDI0/EgT58M8r0AErEsmFi2IOxmRCwLJpaZx9yCMIB2XxhYXVqXaCugZGDlzAKf7wwIQzB7MgTzZ30I7sJENLZgGtuAuJ8RjS2YxmYec0E0tsVwmOYsTASsnFkYpvl4mOZPhUlOXAgk0c+S6WdJ9LOcjIdAMkXMPOaSKGKL+cDlkrksGVg5EH2XaUDy9by897kzkbqSSV0DSoClkkhdyaQu85hLInUthnlmUpeBlQMhz/6TPIszz0TlSqZyLQjzmahcyVQu85hbEPJsMPghkbOKFlgMrCwoGJnP+6jfEU6ksGRSWBIpLMmuqmRSmHnMJZHCruDYWilTa6XF4VC3B+9w3Hur23rbtw1cHDlbaHHEwMqB5AWpPEtnSaSzZNJZkk1WSTZZJZPOzGMuiXS2GB5U2CYrAysHkvcQ8iyOJRHHkoljScQxMbqQTBwzj7kk4thimEwmjhlYOZCReda5kuhcyXSuBSGZROdKpnOZx9yCkMyIkcl2URlYOZCR+TLJKolklUyyWhASTrZaJZOszGMuiWS1mBg7IpLrYXgYfNfrbnvwmu/mI+2bdvwbuqWzCypUMrByIHnFJu/FgShPyZSnBWEciPKUTHkyj7kFYRxmLPGJy5KBlQNZ4s/PZBJ9KJk+lGQPVhJ9KJk+ZB5zSfShxTCZxGXJwMqBhMzgrPQCovQCpvQCovQCovQCpvSYxzwgSs9icGXsrKKVMQMrC7KVcYA+Ox4fkgMi+QIm+SwICR83ugiY5GMe84BIPouJsY9iCz0k3w2D77bZNNv+4LWbnXmNeHeEA7KrK/o2n4GVA8nX+cEL9kUDohgDphgtCMNEFGPAFCPzmFsQhslKO/RK3oFokGFg5UByCjw4b4wGRA0GTA0GRA0GRA0GTA0yj3lA1KCzCgouHQhTl4CVA1nqvuAj24Dov4DpPwNKeAib6L+A6T/mMQ+I/rMY2nlbOpeQbQJWDmRsh//FCXgjiUavWtBfynh919dr7+YfnTlQgg42J8aUQDtf1waU6MyPqwM8Mm+PYgPSM+sSbZ/n1iU6beqsoo8GHIhO/TCwciB5bx1EL5uAjXqTY2KiVDOXOXO+avWpjoN3OjGMZqzEWIPHcK4ZmLp6gI6xeLKSlark76p2fXPQ1W3v8KmkjFUhZ2DBwCUDSwZWI81+GNHzx8KBEVpoUEoCeyYVDDzXDEytWbSLsmA+M2Y2Z2DBwCUDSwZWI015SOi99DdiKwK7ZIkD4fRAwNSBgLMF85kxszkDCwYuGVgysBppykNCz3I0MDoOjcRJQKTaNQPTAOs4QyjxmTGzOQMLBi4ZWDKwGmnKw7tK/ouTs6E9bwompiS0J1VBT79mYOrMos/FmM+Mmc0ZWDBwycCSgdVIUx5G4B6hRtzJkW0P/Knzu8az8m7XHYYf7JUD61rvj9w17Xpdb1dNDK/VCNnNbgxMHYhu1vjJ1ti7Qpptc9x73dE7dFvPXiZjDnkeTStjb1Wvbpte3x9yaL9uh5sh4GU1pBk5AwsGLhlYMrAaoe5hapx3UkMrU8HImTgQ3Q7AwNSBaMXKfGbMbM7AgoFLBpYMrEaa8pDQszYO2ZVnIdGN1wxMQywqDaHEZ8bM5gwsGLhkYMnAaqQpDwk9b3+G7A6ykEjDawamIdaNhlDiM2NmcwYWDFwysGRgNdKUh4Set0DDkBEaMkIJmDoQEkp8ZsxszsCCgUsGlgysRprykNDnqVS8wInGxXXiQHglGwFTB8JL2YjPjJnNGVgwcMnAkoHVSFMe3QrgdqIT32y2jh2V+pgm6DTTxb1Lbs2d4F1v7t0ebuB+163+aG707duD9eHpv7brx8916VPgu8//Vr9xOP3cbtXqQ9+jff+fxZ+7Zq8q+MfwsD72Xdau+2Y/5M2q2db7thvA4dL062593GyHJzeNvv3s/pPB6v0nu/au6z/Vn9fN/TKuGsboUHf3bwcfuv2pJReXbzbN/uvp6vGDt+qOW/1YaC3vng/Xpqe+H2f+wxL2QvUwTob7iR8hhZjG+jNhhASxPvMAEH8a69O2AJEy1t/V/IikYhbrb3MBIqex3sNGNRCxPkgE2hP4sd7WQTUIY/39BPDji1jf2oFqMI/1hiNCJrH+ThLUQPGWQN4W0zhHz1M/iDMf8ZkK5V8g/8U8rmC9hIz1SSRQLxWBBEagUK2sYCuvAhHr3ReUN6qVMNJXKjYJjo2KQAIjsBQqoaCXeayP+SIvsziBWVMIP9Yn+pB/ZQ22s1CZVsFMu1JxTmCcUxXnDMY5VTmYwRy8ChQDAc5BZQ3ymQYqogGMmx/F+p4AwKfqhjADw0mstSlC/FgP6ogBFWnITSrCWB8fAjVTDFSYARHF+ogNioEaVSTqBVdBFOu3tyg/4hSPXZNYH69FXqK4kshWKlXUJKrzYhbncHwK1BgQQC+q31QwZgvVlgq2JVV5m8G8zdXoncPxqVD9o8L9Q7GZQDYL1XMq2HMW/iTOfdweFRuYt4Ue1iGbakyVeBRQGQAjsJjHOWxLqMMMOVM9IIM9YBGoHh3AucOXsb6DB1lTM5EPxxSpOJMIuQrmsX51iBhQ/RbPeCo7MjiqFmo2LuFsnIk4h2yqrElg1hQqOyucnaqdJWxnqkboDI7QVyqeCY6nmr0SPHuprNHbkajWai6Cs1ShxocSjg+p6tMZ7NOpyvUMjxwqbgmOmxpSYKpfqeE2gV03VRNbBie2VKV0hlM6iHNMjSIadqgrFbYEhi3TowAkUwUALsdSleoZTPUr1XES2HEKNeFVIwsbNXnh4V4tUyq8TFFLqxIOXVcqCROchKoTZLATpKqlGV546vEJRkZ1aZgAhRruKzjcFyqhS5jQhUrbEqZtqtI2g2m7kHEOI6DSOcHprAb1DA/qaiK4xst4FYEERuBKTfkpnPKvVHYkODtUx01gxy3UMFDhYUANuCkccK8U0wlmWmVUCTNqoYbVahhWL84a5/LNbt9u+99ON2oc9A0p7V/dtq/X181WybPhTz5dDH9a6n29/6qEl7duvihVNHntz6NZOJFzOZ1MpjP94mA/vApAUN/tNHB+NPHDqd6m+tz1fbc5Ccrbpr7RkhD92peu60ewC/eXr447T99ZqOqvm/P21U7Jun3d9koe1kqAfmz/ak63yh6GP181H/6elPtjXpf/D1BLAwQUAAAACAAzN9lcQShTu+UKAACQ8gAADQAAAHhsL3N0eWxlcy54bWztXdtu4zYQ/RVB+9rW1sWK1cZB2wABCrTFotmHPixQKLYcC9XFleVt0q/qN/TLKkqOYiUcryxxOBSzWSyiiCJ5Dmc4nOFFutwVj3F4uwnDwnhI4nS3MDdFsf12MtktN2ES7L7JtmFapqyzPAmK8s/8frLb5mGw2rFMSTyxp1NvkgRRal5dpvvkJil2xjLbp8XCdJpbRv3rp9XCtDzXNOrirrNVuDDfffXu3fQP47uPX1dXHw1zws02a2ebfvzv34/XwLNe+9nNt0ny3ffs2ckB4tXlOkufkVquWd8pSwuS0PgUxAvzhzwKYpZp9099w5pWRdTPvXz6Qx7e7ctGK4xfbtlj6yCJ4sc6zWY37g6FiCtRPK5lFme5kd/fLcybm2n5c3MjHq4nopC5aFH4ogsUhvAzQhlUz4Cym+4hQS+bEm0RumMPwtVqsrrRWhCP1bv6xYxNFMeNsbkw6xtXl9ugKMI8vSn/qPJUN18lGYfrD4/b0pbd58GjZc/Mzhl2WRytWJX31xXyKF2FD2FpJr2qkLtXt92q7KPy+tZUlEMIs9SmUUSM+NfTb6au7899x5rPbMubO64sBLjVNEXaNnJNjdoxxTu3rupXqY13Wb4K82d9nJtP964u43BdlPnz6H7DfhfZllWSFUWWlBerKLjP0qDS1qccxzmNyp9YmEm4ivaJ+dRZXoJjj7bq6JivfPIJTMcc9cOfBz5RE07HYqtn1UI+tCE3QZSTgzlD40/iFajviO1ysmgsKMPajwTy4M5J2tDdTXOn6hVj11WN3gK3L3o5iJ2gAVFRzSRmh66bgvnhO7QdfA2JXiGir39OPNGbsYygZYKkc0D4pUqIgQWo/0BQbKrZZ9JecBKDJpjVsDdoqHFtxpmCf9XLhDpbSNqKC3qwfUaInXHrGGnz97RxpOEHsv0eFbdxBY7444ES1kypKa8xab+shj7ZJnJnZoVCkSRzIZiVtXhC2fXV6JMg+k1FoFfQW0KIWM51xzDpynFA30b/6Aq6d/9AqABdQijBcD+zIWWpmgiMslGWYH6KxVnE7N7KMggRbDHeNPWE++hk/4WhgBnxt8ARxbdQxIVWuNuMaUpIDRUZJ+pXio00ko3LR1NITYijX0VXSCmnepQNw4hVRMKUF9KGN3WQIFvhMWxlHThykO4nmXTS8MPFriwwjONbVsXv6+aojV1W9LA+Oqo6ZQdV0+YyimN2aZtGXUx9fwJnso5yTV/lmhxjqBEdg3HmveAY2+hTVvy4L1shrf7+a58V4fs8XEcP1d8P68/itsWXbrm4xXu45R8LFZSpkNJxJXtCIzsWb/VUnGC7jR9/iKP7NAmrQ93d+VxdBk/5jE2WR/+UtbHDnMvyRphXXelh3QmUcwzK44Kqbr3PSyTLImLABACtLJRpfArzIlq2kW+bmow4W/4Z1tA30WoVpk924hQ5B5CnK43cgYs4dsemQkN6HTRzjsoOg4kLyMmyCAVVOgSm8XcebD+ED8XBcqERtTUjCvU8i2/LxSunVFK6qSlIVAs1Pbxu5hVVt0V1xGMERLAty5kOsuR71q3hkJIn/mAvjx0Ll3XlJlxy9hG9GUDPutBjLGyRsinHQnyV1IQepJI27gCPq5JzYCh3pA/lYsm05kIc6UZRABlfGcmg9CaInquHsYD6lS+GnUXUrVA0UQkyggRDZe+I+5DYUMSWOLzKHYlmYxyJZpBkpPcZZGcIIurgTsCpQ9SVt0AjhygUkvBHLrxovxdIfqgrav2hFyRgKlo2Jtw15jZj/sqQgEiuKNX8t6wI6i7lT18pf69oVExrgLEu30BIWlb2nlHNWjLyRKvA7MWUGmLpwIyWpCYF1Z4+CpM11025PiOZqqMfVQcYFUY8D374XMNpfrjz4NLm+aGlRNz9GLJmgSB2IxZeB3aUYSH+aoZAFxgxdgC2VxChVHITCP6OQNKtH+LogW63uNBIYDCA0z2HRih8m0iMyub7g9SocCZnhqLiO5Si+u05oT8IETU4PwviBRRrSfd8BNg/kIx0JxVzFwOphYJQATPv1KhwnKuBzpR2IdNU65Bpql/INAfYOfL9YLxtUm1m0mfUMLdJ6bTSPkrJ+JCaUa7L4tPTw7aDwtODnoW8VNR9F5iE9RPktaJRcBVkQFXiCs6Wyhss5J8IkXgqS2tyJIsNWpyYpz+rREAOmB3XRTP5EzOjYAe87UAXevzphjfEDlhsGRs98DidPOkRmE2JhwUR2akzE4a4ZEC7/ntiA6x6oFzU1cPeMxN6uCggPT3GAYieq8coDq1mu3xTKSRE7Y0JZ8PEMEyIZ1mol0XOmDvCOyHldJiJJx5eSI8QQKBINxQcGU1b75UUXXaFdxGedvRaVlPiedp6olawzQT9MHmOilReEk/LYvOy9Q4LbL3DAlvDsECBmFWukdTU+Lvyxmy58tLH+E9pPEiptEbeu86cJEHjhUlF8h4MTCqSd1zIP+M1RiqSoxBMoUi2ZpjugQKxhjRXSIHAQxbXmQJRiCyuKuz0kcX1LYn1DXVXiXtK6LnK22FCz1WBNxBI+2YBX65SFkJBTISL2NBLHmdjPBkFkhnje8pBMrq9fhMkSrmQJ5UopWuI/ELVFlGJBxX4RBG5UX/0B1Ns1B0Rkxt130PkRumuY4uN+q3iiNxIwyxsbpRhFTY3yjBKELdTL09WbU8rzm75QZCQXtM8KJL78gEG3Yhq9wEGUKJvhSi1gy2Lpxam6Phk8JEv4PFc796shkpgCi/NIH4Hw6M0wUgzyVBLzlQVceOEqIdsrioyZftrE+jKRab71wU6tDxNL+ry2QNN3hgONTyNxnfTCAFjJ1i6mC8InSqexJDwvaWXE5WIzJv5NOUUyh7ca9GQ2dTIwDfOifIxrTH4mMq6chcukTmZdRgfR/y6N4hg2ymkXmwUHkdr/pYmaL7YIz3+firmQByPkf0cMZ95hIpvJpmVs8iOus6EGJGAH6UgfbHFKUXB1MMzGPYpntzxAI9U6hH8gicrFdh3jOjQOsoG982JeDJkkJNwwQ94pCwqg63loJofdjYSccS4wNlwPXDEcMU4RhBpj/Q7bhBpMa4m+BYP7QYLW8PBAhoLPcnn1mXN6jT7N5RzrgAbMZoWB3mN/H0woCaRu+lnOi0qnz4/5eso6rPSTMJ2ED8wsaWy+EHbQTnZKnm9wVU2PGteFaDemKnAy0KlrUfZqGGfp+xw5hEeG4ZayxKzHwHaqynR+6bdlCrR6SU+Z6rF9tsuZop8nyG004V0g+yZZ4QmyzCOf1/vri7ZxW3xGIc7Y5ntGWbbPLprpEESLsxfszwJ4mdgxt0+iosobSzQywy3RZCugiBf/WFfTN2njPV345+rvLosgrs4bNdflr4K18E+Lj40iQvz+fqXcBXtE7t56j1rzMNTz9c/s2+7WF6FLYuzvKwrSlfhQ7i6PvyZ399Vl0Z5UdZ6+GEZXqbcVD/8FChPncZPYWlQPRACKE+dC6pHJz5zkE+dBmGbc1PmYJ45mKfOxUu5rv5B9fDz+OUPn6nvO47nQS16fc1FcA21m+ex//zSIGwsB1QPq+m8toalDWvIaT2AZHpKQyCmsCZCTOG2Zin8dmM5fJ8vbagelgOSAqQ7rH5+PUyn+Hkch0kVwgb1YDjF96EUpot8HfU8oHU89o8vH6iXOI7v81NYGh+B40AprDfCKRAChgFKcZxqHHwxHk2exqnJjg1gt5swLK7+B1BLAwQUAAAACAAzN9lcQknwHtAAAACmAgAACwAAAF9yZWxzLy5yZWxztZLLbgIxDEV/ZZQ9mEfFomJYsWGHED/gJp6HZhJHjhHD35OyKYPaUiF16eTm6OTK6wP1qC2H1LQxFYPvQypNoxrfAZJtyGOacqSQbyoWj5pHqSGi7bAmWMxmK5B7htms75nF8RLpL0SuqtbSlu3JU9BvwA8JUxxRatLSDD2cWboP5m6aoabYudLIzs0NvOjy8+/Ak6JDRbAsNImSX4u2lL50HNt9Pk63xEho8bLQ83JoUAqO3O9KGOPIaPmPRvaUlP2Tim6ZkdLbpxKM1nJzBVBLAwQUAAAACAAzN9lc8+z1oZwBAADbAgAADwAAAHhsL3dvcmtib29rLnhtbI1SXU/jMBD8Kz6rEk9H0vaag6qJhA7dwR3iEFT0ETnxplnhj8jeksKvx06IKOKFp/XsWrOjmV111j2W1j6yvVbG57whapdJ4qsGtPDHtgUTJrV1WlCAbpv41oGQvgEgrZJZmmaJFmh4sRq5bhyrrIRroSHn6wb95m3Ak2IV6z1C59//R8ie0GOJCuk55/1bAWcaDWp8AZnzlDPf2O7COnyxhoS6q5xVKufTYXAPjrD61L6LOtei9H1nv0EjbZfz+exnFhifR/w9+7HgrOvRBiU1OZ+dnKTp2LsA3DYUOBbz+JFEeSsIbc6z+KdG56nf1OsUFeEThKUD2pH9jYrAnQuCP87uWjTbKCe4kRzY0Vs61iGPpftKIrausYJzW+00GBoicaCiQOMbbD1nps/i75pJYKXwEM0JWy7lYBQFZQe2uyWGgbuUg8ZRmIQaDciY60f0Rv+wV0Yf3zg09HAWjoQzZWMi46aUF0fvEo6+Tc4m0+Xk32SRrZIDtuIDCpsCRxVvKpRecDY7nc6D6zulfoXef3NlhRwNHY+qeAVQSwMEFAAAAAgAMzfZXCQem6KtAAAA+AEAABoAAAB4bC9fcmVscy93b3JrYm9vay54bWwucmVsc7WRPQ6DMAyFrxLlADVQqUMFTF1YKy4QBfMjEhLFrgq3L4UBkDp0YbKeLX/vyU6faBR3bqC28yRGawbKZMvs7wCkW7SKLs7jME9qF6ziWYYGvNK9ahCSKLpB2DNknu6Zopw8/kN0dd1pfDj9sjjwDzC8XeipRWQpShUa5EzCaLY2wVLiy0yWoqgyGYoqlnBaIOLJIG1pVn2wT06053kXN/dFrs3jCa7fDHB4dP4BUEsDBBQAAAAIADM32VyhWMQ+IwEAAEwEAAATAAAAW0NvbnRlbnRfVHlwZXNdLnhtbK2UTW6DMBCFr4K8jcBpF11UIZum2zaLXsA1Q7DiP3mGlNy+AySRWqUoEd1g4XnzPps3YvVxjIBZ56zHUjRE8VlK1A04hUWI4LlSh+QU8Wvayaj0Xu1APi6XT1IHT+App95DrFcbqFVrKXvteBtN8KVIYFFkL6OwZ5VCxWiNVsR1efDVL0p+IhTcOWiwMREXLBDyKqGv/A049b0fICVTQbZVid6UY5XsrEQ6WsBi2uLKGUNdGw1V0K3jlgJjAlVhA0DOFqPpYppM/IVhfD7M5g82U0BWblOIyIkluB93jqTvziMbQSIzfcULka1n3w/6tCuo7mXrFim42fjR5kY4Z/sV0n4YBpTDMj/gnwN28b/hHJ8h7P97vvu1cMr4M18OP5H1N1BLAQIUAxQAAAAIADM32VxGx01IlQAAAM0AAAAQAAAAAAAAAAAAAACAAQAAAABkb2NQcm9wcy9hcHAueG1sUEsBAhQDFAAAAAgAMzfZXNrSTssuAQAAnQIAABEAAAAAAAAAAAAAAIABwwAAAGRvY1Byb3BzL2NvcmUueG1sUEsBAhQDFAAAAAgAMzfZXKW6CSedBgAAxyAAABMAAAAAAAAAAAAAAIABIAIAAHhsL3RoZW1lL3RoZW1lMS54bWxQSwECFAMUAAAACAAzN9lcccSOK/sAAAApAgAAEwAAAAAAAAAAAAAAgAHuCAAAZG9jUHJvcHMvY3VzdG9tLnhtbFBLAQIUAxQAAAAIADM32VxF2kURARIAANhrAAAYAAAAAAAAAAAAAACAgRoKAAB4bC93b3Jrc2hlZXRzL3NoZWV0MS54bWxQSwECFAMUAAAACAAzN9lcQShTu+UKAACQ8gAADQAAAAAAAAAAAAAAgAFRHAAAeGwvc3R5bGVzLnhtbFBLAQIUAxQAAAAIADM32VxCSfAe0AAAAKYCAAALAAAAAAAAAAAAAACAAWEnAABfcmVscy8ucmVsc1BLAQIUAxQAAAAIADM32Vzz7PWhnAEAANsCAAAPAAAAAAAAAAAAAACAAVooAAB4bC93b3JrYm9vay54bWxQSwECFAMUAAAACAAzN9lcJB6boq0AAAD4AQAAGgAAAAAAAAAAAAAAgAEjKgAAeGwvX3JlbHMvd29ya2Jvb2sueG1sLnJlbHNQSwECFAMUAAAACAAzN9lcoVjEPiMBAABMBAAAEwAAAAAAAAAAAAAAgAEIKwAAW0NvbnRlbnRfVHlwZXNdLnhtbFBLBQYAAAAACgAKAH8CAABcLAAAAAA=";
+
+function b64ToArrayBuffer(b64) {
+  const bin = atob(b64);
+  const buf = new ArrayBuffer(bin.length);
+  const view = new Uint8Array(buf);
+  for (let i = 0; i < bin.length; i++) view[i] = bin.charCodeAt(i);
+  return buf;
+}
+
+async function exporterEtPartager() {
+  const chantierId = state.currentChantierId;
+  const chantier   = state.chantiers[chantierId];
+  const journaux   = state.journaux[chantierId] || {};
+  const keys       = Object.keys(journaux).sort();
+
+  if (!keys.length) {
+    showToast('Aucun journal à exporter', false);
+    return;
+  }
+
+  showToast('Génération en cours…');
+
+  // Choisir le bon template selon le type de délai du chantier
+  const isOuv = (chantier.delaiType === 'ouvrables');
+  const templateB64 = isOuv ? TEMPLATE_OUV_B64 : TEMPLATE_CAL_B64;
+  const templateBuf = b64ToArrayBuffer(templateB64);
+
+  // Charger le template dans SheetJS
+  const templateWB = XLSX.read(templateBuf, { type: 'array', cellStyles: true });
+
+  // Créer le classeur de sortie
+  const wb = XLSX.utils.book_new();
+
+  for (const key of keys) {
+    const j = journaux[key];
+
+    // Cloner la feuille template (copie profonde via JSON du sheet object)
+    const templateSheet = templateWB.Sheets[templateWB.SheetNames[0]];
+    const ws = JSON.parse(JSON.stringify(templateSheet));
+
+    // ── Helper pour écrire une cellule en conservant le style du template ──
+    function setCell(coord, value, numFmt) {
+      if (!ws[coord]) ws[coord] = {};
+      const existing = templateSheet[coord] || {};
+      ws[coord] = { ...existing };
+      if (value === null || value === undefined || value === '') {
+        ws[coord].v = '';
+        ws[coord].t = 's';
+      } else if (typeof value === 'number') {
+        ws[coord].v = value;
+        ws[coord].t = 'n';
+        if (numFmt) ws[coord].z = numFmt;
+      } else if (value instanceof Date) {
+        ws[coord].v = (value - new Date(1899, 11, 30)) / 86400000;
+        ws[coord].t = 'n';
+        ws[coord].z = numFmt || 'dd/mm/yyyy';
+      } else {
+        ws[coord].v = String(value);
+        ws[coord].t = 's';
+      }
+    }
+
+    // ── Parsing de la date ──
+    const [y, m, d] = key.split('-').map(Number);
+    const dateJournal = new Date(y, m-1, d);
+
+    // ── EN-TÊTE ──
+    // A1 : intitulé chantier
+    setCell('A1', chantier.nom + '\n' + (chantier.entreprise || ''));
+
+    // F1 : Journal n°
+    setCell('F1', j.numJournal || 1);
+
+    // I1 : Feuillet n°
+    setCell('I1', j.numFeuille || 1);
+
+    // K1 : Date du journal
+    setCell('K1', dateJournal, 'dd/mm/yyyy');
+
+    // F2/I2 : Heures de travail
+    if (j.heureDebut) {
+      const [hh,mm] = j.heureDebut.split(':').map(Number);
+      setCell('F2', (hh*60+mm)/1440, 'hh:mm');
+    }
+    if (j.heureFin) {
+      const [hh,mm] = j.heureFin.split(':').map(Number);
+      setCell('I2', (hh*60+mm)/1440, 'hh:mm');
+    }
+
+    // Météo & Températures selon le type
+    if (isOuv) {
+      // Jours ouvrables : météo en H3, congés en H4
+      setCell('H3', j.meteo || '');
+      setCell('H4', j.conges || 0);
+    } else {
+      // Jours calendriers : météo en E4
+      setCell('E4', j.meteo || '');
+    }
+
+    // E8 : Température matin, K7 : Température soir
+    // (les cellules de saisie températures sont E8 et K7 dans le modèle)
+    setCell('E8', j.tempMatin !== undefined ? j.tempMatin : '');
+    setCell('K7', j.tempSoir  !== undefined ? j.tempSoir  : '');
+
+    // ── DÉLAI ──
+    setCell('F6', j.delaiInitial  || 0);
+    setCell('G6', j.delaiEcoules  || 0);
+    setCell('H6', j.delaiIntemp   || 0);
+    setCell('I6', j.delaiDecomp   || 0);
+    setCell('J6', j.delaiStatage  || 0);
+    const restants = (j.delaiInitial||0) - (j.delaiEcoules||0) + (j.delaiIntemp||0) + (j.delaiDecomp||0) + (j.delaiStatage||0);
+    setCell('K6', restants);
+
+    // Fin du délai contractuel (jours calendriers uniquement)
+    if (!isOuv) {
+      const finDelai = new Date(chantier.debutTravaux);
+      finDelai.setDate(finDelai.getDate() + (j.delaiInitial || 0) + (j.delaiIntemp||0) + (j.delaiDecomp||0) + (j.delaiStatage||0));
+      setCell('H9', finDelai, 'dd/mm/yyyy');
+    }
+
+    // ── A — OUVRIERS (lignes 13 à 17) ──
+    const ouvriers = (j.ouvriers || []).filter(o => o.profession || o.nbre);
+    const OUVR_START = 13;
+    let totalOuv = 0;
+    for (let i = 0; i < Math.min(ouvriers.length, 6); i++) {
+      const row = OUVR_START + i;
+      setCell('B' + row, ouvriers[i].profession || '');
+      const n = parseInt(ouvriers[i].nbre) || 0;
+      setCell('C' + row, n);
+      totalOuv += n;
+    }
+    setCell('C45', totalOuv);
+
+    // ── B — TRAVAUX (D13:F18) ──
+    let travaux = '';
+    if (chantier.surveillance === 'conjointe') {
+      travaux = (j.travauxSpge ? 'SPGE: ' + j.travauxSpge + '\n' : '') +
+                (j.travauxVoirie ? 'Voirie: ' + j.travauxVoirie : '');
+    } else {
+      travaux = j.travaux || '';
+    }
+    setCell('D13', travaux);
+
+    // ── C — MATÉRIEL EN SERVICE (H13:K18) ──
+    const matServ = (j.materielService || []).filter(m => m.description || m.nbre);
+    for (let i = 0; i < Math.min(matServ.length, 6); i++) {
+      const row = OUVR_START + i;
+      setCell('H' + row, matServ[i].description || '');
+      setCell('K' + row, parseInt(matServ[i].nbre) || 0);
+    }
+
+    // ── D — MATÉRIEL HORS SERVICE (H21:K23 descriptions, H25:K26 causes) ──
+    const matHS = (j.materielHs || []).filter(m => m.description || m.nbre);
+    for (let i = 0; i < Math.min(matHS.length, 3); i++) {
+      const row = 21 + i;
+      setCell('H' + row, matHS[i].description || '');
+      setCell('K' + row, parseInt(matHS[i].nbre) || 0);
+    }
+    setCell('H25', j.materielHsCauses || '');
+
+    // ── E — MATÉRIAUX (H28:K32) ──
+    setCell('H28', j.materiaux || '');
+
+    // ── F — ESSAIS (H34:K36) ──
+    setCell('H34', j.essais || '');
+
+    // ── G — ÉCHANTILLONS (H38:K40) ──
+    setCell('H38', j.echantillons || '');
+
+    // ── H — ÉVÉNEMENTS (H42:K43) ──
+    setCell('H42', j.evenements || '');
+
+    // ── J — DÉCISIONS (A47:D50) ──
+    setCell('A47', j.decisions || '');
+
+    // ── K — VISITES (E47:K50) ──
+    setCell('E47', j.visites || '');
+
+    // ── SIGNATURES ──
+    setCell('A52', j.prepose || '');
+    setCell('E52', j.delegue || '');
+
+    // Nom de l'onglet : JJ-MM-AAAA
+    const sheetName = `${String(d).padStart(2,'0')}-${String(m).padStart(2,'0')}-${y}`;
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+  }
+
+  // ── Nom du fichier ──
+  const nomFichier = (chantier.nom || 'chantier')
+    .replace(/[^\w\s\-]/gi, '').trim().slice(0, 40) + '_JT.xlsx';
+
+  // ── Générer et télécharger le fichier Excel ──
+  const wbOut = XLSX.write(wb, { bookType: 'xlsx', type: 'array', cellStyles: true });
+  const blob  = new Blob([wbOut], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const url   = URL.createObjectURL(blob);
+  const link  = document.createElement('a');
+  link.href     = url;
+  link.download = nomFichier;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+
+  // ── Ouvrir Outlook (client mail par défaut) avec adresse et sujet pré-remplis ──
+  const email = chantier.email || '';
+  const sujet = encodeURIComponent('Journal de Travaux — ' + chantier.nom);
+  const corps = encodeURIComponent(
+    'Bonjour,\n\nVeuillez trouver ci-joint le journal de travaux du chantier :\n' +
+    chantier.nom + '\n\nFichier à joindre : ' + nomFichier + '\n\nCordialement'
   );
-});
+
+  setTimeout(() => {
+    window.location.href = `mailto:${email}?subject=${sujet}&body=${corps}`;
+  }, 800);
+
+  showToast(email ? 'Fichier téléchargé — Outlook ouvert ✓' : 'Fichier téléchargé ✓');
+}
+
+async function exporterExcel() { await exporterEtPartager(); }
+
+</script>
+
+<!-- Service Worker registration -->
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js')
+    .then(reg => console.log('SW enregistré', reg.scope))
+    .catch(err => console.warn('SW échec', err));
+}
+</script>
+</body>
+</html>
